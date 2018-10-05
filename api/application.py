@@ -22,6 +22,8 @@ def get_devices():
                         'description': device.description
                         })
 
+    if deviceList == []:
+        return jsonify({'error': 'No devices found'}), 404
     return jsonify(deviceList)
 
 @app.route("/api/devices/<int:device_id>", methods=['GET'])
@@ -97,3 +99,7 @@ def bad_request(error):
 @app.errorhandler(404)
 def bad_request(error):
     return jsonify({'error': 'Not found'}), 404
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0',debug=True)

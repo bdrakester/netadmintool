@@ -7,26 +7,26 @@ from configparser import ConfigParser
 from database import NetAdminToolDB
 from flask import jsonify
 
-#config = ConfigParser()
-#config.read("config.txt")
+config = ConfigParser()
+config.read("netadminapi.conf")
 
-#dbuser = config['DATABASE']['dbusername']
-#dbpass = config['DATABASE']['dbpassword']
-#dbhost = config['DATABASE']['hostname']
-#dbport = config['DATABASE']['port']
+dbuser = config['DATABASE']['dbusername']
+dbpass = config['DATABASE']['dbpassword']
+dbhost = config['DATABASE']['hostname']
+dbport = config['DATABASE']['port']
 
-#connString = f"postgresql://{dbuser}:{dbpass}@{dbhost}:{dbport}/netadmintool"
-#engine = create_engine(connString)
-#db = scoped_session(sessionmaker(bind=engine))
+connString = f"postgresql://{dbuser}:{dbpass}@{dbhost}:{dbport}/netadmintool"
+engine = create_engine(connString)
+db = scoped_session(sessionmaker(bind=engine))
 
-#devices = db.execute("SELECT * FROM devices").fetchone()
+devices = db.execute("SELECT * FROM devices").fetchone()
 #print(devices)
 
 
-myDB = NetAdminToolDB('netadminapi.conf')
+#myDB = NetAdminToolDB('netadminapi.conf')
 #myDB.add_device('router2','ios_router','My second router')
 
-myDevice = myDB.get_device(1)
+#myDevice = myDB.get_device(1)
 #allDevices = myDB.get_device()
 
 #deviceList = []
