@@ -12,6 +12,9 @@ def index():
 
 @app.route("/api/devices", methods=['GET'])
 def get_devices():
+    """
+    Return all devices.
+    """
     devices = netAdminToolDB.get_device()
     deviceList = []
     for device in devices:
@@ -24,10 +27,14 @@ def get_devices():
 
     if deviceList == []:
         return jsonify({'error': 'No devices found'}), 404
+
     return jsonify(deviceList)
 
 @app.route("/api/devices/<int:device_id>", methods=['GET'])
 def get_device(device_id):
+    """
+    Return device with id device_id
+    """
     device = netAdminToolDB.get_device(device_id)
 
     if device == None:
@@ -42,6 +49,9 @@ def get_device(device_id):
 
 @app.route("/api/devices/<int:device_id>", methods=['PUT'])
 def update_device(device_id):
+    """
+    Update device with id device_id
+    """
     device = netAdminToolDB.get_device(device_id)
     if device == None:
         return jsonify({'error': 'Device_id not found'}), 404
@@ -63,10 +73,13 @@ def update_device(device_id):
 
 @app.route("/api/devices", methods=['POST'])
 def add_device():
+    """
+    Add a new device
+    """
     input = request.get_json()
 
     if input == None:
-        return jsonify({'error': 'Invalid POST request'}), 400
+        return jsonify({'error': 'Invalid POST request, no data'}), 400
     if not 'name' in input:
         return jsonify({'error': 'Invalid POST request, missing name'}), 400
     if not 'device_type' in input:

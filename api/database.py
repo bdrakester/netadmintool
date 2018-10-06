@@ -26,17 +26,15 @@ class NetAdminToolDB:
 
     def add_device(self, name, type, description=""):
         """
-        Add a Device
-        TODO: Is there a better way to return the device ID, like direcly
-        from sql command result?
+        Add a Device, returns the new device's id.
         """
-        self.db.execute("INSERT INTO devices (name, device_type, description) \
-                        VALUES (:name, :type, :description)",
-                        {'name': name, 'type': type, 'description': description})
+        result = self.db.execute("INSERT INTO devices (name, device_type, description) \
+                                VALUES (:name, :type, :description) RETURNING id",
+                                {'name': name, 'type': type, 'description': description})
 
         self.db.commit()
 
-        return self.get_device_name(name).id
+        return result.fetchone().id
 
 
     def get_device(self, id=0):
