@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, url_for
 from database import NetAdminToolDB
 
 app = Flask(__name__)
@@ -13,22 +13,37 @@ def index():
 @app.route("/api/devices", methods=['GET'])
 def get_devices():
     """
-    Return all devices.
+    Return all devices. Support query strings: name.
+    Name: returns all devices with that name
     """
+    name = request.args.get('name')
+
     devices = netAdminToolDB.get_device()
     deviceList = []
-    for device in devices:
-        deviceList.append({
-                        'id': device.id,
-                        'name': device.name,
-                        'device_type': device.device_type,
-                        'description': device.description
-                        })
+    if name != None:
+        for device in devices:
+            if device.name == name:
+                uri = url_for('get_device',device_id=device.id,_external=True)
+                deviceList.append({
+                                    'uri': uri,
+                                    'name': device.name,
+                                    'device_type': device.device_type,
+                                    'description': device.description
+                                })
+    else:
+        for device in devices:
+            uri = url_for('get_device',device_id=device.id,_external=True)
+            deviceList.append({
+                            'uri': uri,
+                            'name': device.name,
+                            'device_type': device.device_type,
+                            'description': device.description
+                            })
 
     if deviceList == []:
         return jsonify({'error': 'No devices found'}), 404
 
-    return jsonify(deviceList)
+    return jsonify({'devices': deviceList})
 
 @app.route("/api/devices/<int:device_id>", methods=['GET'])
 def get_device(device_id):
@@ -40,11 +55,13 @@ def get_device(device_id):
     if device == None:
         return jsonify({'error': 'Device_id not found'}), 404
 
-    return jsonify({
-                    'id': device.id,
-                    'name': device.name,
-                    'device_type': device.device_type,
-                    'description': device.description
+    uri = url_for('get_device',device_id=device.id,_external=True)
+    return jsonify({'device':{
+                                'uri': uri,
+                                'name': device.name,
+                                'device_type': device.device_type,
+                                'description': device.description
+                            }
                     })
 
 @app.route("/api/devices/<int:device_id>", methods=['PUT'])
@@ -68,7 +85,11 @@ def update_device(device_id):
 
     netAdminToolDB.update_device(device_id, updates)
     device = netAdminToolDB.get_device(device_id)
-    return jsonify({'device': dict(device)}), 200
+    deviceDict = dict(device)
+    uri = url_for('get_device',device_id=device.id,_external=True)
+    deviceDict['uri'] = uri
+    del deviceDict['id']
+    return jsonify({'device': deviceDict}), 200
 
 
 @app.route("/api/devices", methods=['POST'])
@@ -93,7 +114,11 @@ def add_device():
     id = netAdminToolDB.add_device(input['name'],input['device_type'],
                             input['description'])
     device = netAdminToolDB.get_device(id)
-    return jsonify({'success':dict(device)}), 201
+    deviceDict = dict(device)
+    uri = url_for('get_device',device_id=device.id,_external=True)
+    deviceDict['uri'] = uri
+    del deviceDict['id']
+    return jsonify({'device':deviceDict}), 201
 
 @app.route("/api/devices/<int:device_id>", methods=['DELETE'])
 def delete_device(device_id):

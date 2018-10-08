@@ -34,24 +34,25 @@ def main():
     resp = requests.post(f'http://{hostname}:5000/api/devices',json=postData)
     print_response(resp)
     addedDevice = resp.json()
-    newID = addedDevice['success']['id']
+    #newID = addedDevice['success']['id']
+    newURI = addedDevice['device']['uri']
 
-    print(f'Updating Device {newID} ...')
-    putData = {'description':f'PUT Updated Desc of {newID}'}
+    print(f'Updating Device {newURI} ...')
+    putData = {'description':f'PUT Updated Desc of {newURI}'}
     print(f'PUT data = {putData}')
-    print(f'PUT {hostname}:5000/api/devices/{newID}')
-    resp = requests.put(f'http://{hostname}:5000/api/devices/{newID}',json=putData)
+    print(f'PUT {newURI}')
+    resp = requests.put(f'{newURI}',json=putData)
     print_response(resp)
 
-    print(f'Deleting Device {newID} ...')
-    url = f'http://{hostname}:5000/api/devices/{newID}'
-    print(f'DELETE {url}')
-    resp = requests.delete(url)
+    print(f'Deleting Device {newURI} ...')
+    #url = f'http://{hostname}:5000/api/devices/{newID}'
+    print(f'DELETE {newURI}')
+    resp = requests.delete(newURI)
     print_response(resp)
 
-    print(f'Get device{newID} ...')
-    url = f'http://{hostname}:5000/api/devices/{newID}'
-    resp = requests.get(url)
+    print(f'Get device {newURI} ...')
+    #url = f'http://{hostname}:5000/api/devices/{newID}'
+    resp = requests.get(newURI)
     print_response(resp)
 
 if __name__ == '__main__':
