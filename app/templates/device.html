@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block heading %}Network Admin Tool v1.0{% endblock %}
+
+{% block body %}
+  <h4>Device Details</h4>
+
+  <ul>
+    <li>Name: {{ device.name }}</li>
+    <li>Type: {{ device.device_type }}</li>
+    <li>Description: {{ device.description }}</li>
+  </ul>
+
+{% endblock %}

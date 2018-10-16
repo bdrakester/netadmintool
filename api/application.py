@@ -25,6 +25,7 @@ def get_devices():
             if device.name == name:
                 uri = url_for('get_device',device_id=device.id,_external=True)
                 deviceList.append({
+                                    'id': device.id,
                                     'uri': uri,
                                     'name': device.name,
                                     'device_type': device.device_type,
@@ -34,6 +35,7 @@ def get_devices():
         for device in devices:
             uri = url_for('get_device',device_id=device.id,_external=True)
             deviceList.append({
+                            'id': device.id,
                             'uri': uri,
                             'name': device.name,
                             'device_type': device.device_type,
@@ -57,6 +59,7 @@ def get_device(device_id):
 
     uri = url_for('get_device',device_id=device.id,_external=True)
     return jsonify({'device':{
+                                'id': device.id,
                                 'uri': uri,
                                 'name': device.name,
                                 'device_type': device.device_type,
@@ -88,7 +91,7 @@ def update_device(device_id):
     deviceDict = dict(device)
     uri = url_for('get_device',device_id=device.id,_external=True)
     deviceDict['uri'] = uri
-    del deviceDict['id']
+    #del deviceDict['id']
     return jsonify({'device': deviceDict}), 200
 
 
@@ -117,7 +120,7 @@ def add_device():
     deviceDict = dict(device)
     uri = url_for('get_device',device_id=device.id,_external=True)
     deviceDict['uri'] = uri
-    del deviceDict['id']
+    #del deviceDict['id']
     return jsonify({'device':deviceDict}), 201
 
 @app.route("/api/devices/<int:device_id>", methods=['DELETE'])

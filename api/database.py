@@ -48,6 +48,12 @@ class NetAdminToolDB:
         else:
             device = self.db.execute("SELECT * FROM devices").fetchall()
 
+        # Added Commit to avoid crash with error.
+        # "QueuePool limit of size 5 overflow 10 reached, connection timed out,
+        # timeout 30"
+        # Is there a better way?  Just need to free connection , not commit
+        # changes?
+        self.db.commit()
         return device
 
     def get_device_name(self, name):
@@ -56,6 +62,9 @@ class NetAdminToolDB:
         """
         device = self.db.execute("SELECT * FROM devices WHERE name = :name",
                             {'name': name }).fetchone()
+
+        # Add commit to avoid crash - see get_device(self,id=0) comments
+        self.db.commit()
         return device
 
     def update_device(self, id, values):

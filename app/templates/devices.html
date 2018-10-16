@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block heading %}Network Admin Tool v1.0{% endblock %}
+
+{% block body %}
+  <h4>Inventory</h4>
+
+  <ul>
+    {% for device in devices %}
+    <li><a href="{{ url_for('device', device_id=device.id) }}">
+          {{ device.name }}
+        </a>
+    </li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}
