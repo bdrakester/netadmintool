@@ -4,3 +4,5 @@ CREATE TABLE devices (
     device_type VARCHAR NOT NULL,
     description VARCHAR
 );
+
+ALTER TABLE devices ADD ip_addr INET;

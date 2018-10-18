@@ -1,17 +1,34 @@
 {% extends "layout.html" %}
 
-{% block heading %}Network Admin Tool v1.0{% endblock %}
 
 {% block body %}
   <h4>Inventory</h4>
 
-  <ul>
+  <table style="width:100%">
+    <tr>
+      <th>Name</th>
+      <th>IP Address</th>
+      <th>Device Type</th>
+      <th>Description</th>
+    </tr>
     {% for device in devices %}
-    <li><a href="{{ url_for('device', device_id=device.id) }}">
+    <tr>
+      <td>
+        <a href="{{ url_for('device', device_id=device.id) }}">
           {{ device.name }}
         </a>
-    </li>
+      </td>
+      <td>
+        {{ device.ip_addr }}
+      </td>
+      <td>
+        {{ device.device_type }}
+      </td>
+      <td>
+        {{ device.description }}
+      </td>
+    </tr>
     {% endfor %}
-  </ul>
+  </table>
 
 {% endblock %}

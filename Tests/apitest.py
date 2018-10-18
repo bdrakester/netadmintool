@@ -28,7 +28,7 @@ def main():
 
     print(f'Adding Device {newName} ... ')
     postData = {'name': newName, 'device_type':'test_type',
-                'description':f'Desc of {newName}'}
+                'description':f'Desc of {newName}', 'ip_addr': '192.168.1.2'}
     print(f'POST Data = {postData}')
     print(f'POST {hostname}:5000/api/devices')
     resp = requests.post(f'http://{hostname}:5000/api/devices',json=postData)

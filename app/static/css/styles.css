@@ -1,3 +1,10 @@
 h2,h4 {
   color: DodgerBlue;
 }
+table{
+  width: 100%;
+}
+th, td{
+  border: 1px solid black;
+  padding: 15px;
+}

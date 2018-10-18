@@ -29,7 +29,8 @@ def get_devices():
                                     'uri': uri,
                                     'name': device.name,
                                     'device_type': device.device_type,
-                                    'description': device.description
+                                    'description': device.description,
+                                    'ip_addr': device.ip_addr
                                 })
     else:
         for device in devices:
@@ -39,7 +40,8 @@ def get_devices():
                             'uri': uri,
                             'name': device.name,
                             'device_type': device.device_type,
-                            'description': device.description
+                            'description': device.description,
+                            'ip_addr': device.ip_addr
                             })
 
     if deviceList == []:
@@ -63,7 +65,8 @@ def get_device(device_id):
                                 'uri': uri,
                                 'name': device.name,
                                 'device_type': device.device_type,
-                                'description': device.description
+                                'description': device.description,
+                                'ip_addr': device.ip_addr
                             }
                     })
 
@@ -85,6 +88,7 @@ def update_device(device_id):
     updates['name'] = input.get('name',device.name)
     updates['device_type'] = input.get('device_type',device.device_type)
     updates['description'] = input.get('description', device.description)
+    updates['ip_addr'] = input.get('ip_addr', device.ip_addr)
 
     netAdminToolDB.update_device(device_id, updates)
     device = netAdminToolDB.get_device(device_id)
@@ -108,14 +112,17 @@ def add_device():
         return jsonify({'error': 'Invalid POST request, missing name'}), 400
     if not 'device_type' in input:
         return jsonify({'error': 'Invalid POST request, missing device_type'}), 400
+    if not 'ip_addr' in input:
+        return jsonify({'error': 'Invalid POST request, missing ip_addr'}), 400
 
     if not 'description' in input:
-        id = netAdminToolDB.add_device(input['name'],input['device_type'])
+        id = netAdminToolDB.add_device(input['name'],input['device_type'],
+            input['ip_addr'])
         device = netAdminToolDB.get_device(id)
         return jsonify({'success':dict(device)}), 201
 
     id = netAdminToolDB.add_device(input['name'],input['device_type'],
-                            input['description'])
+                            input['ip_addr'], input['description'])
     device = netAdminToolDB.get_device(id)
     deviceDict = dict(device)
     uri = url_for('get_device',device_id=device.id,_external=True)

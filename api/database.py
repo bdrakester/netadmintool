@@ -24,13 +24,16 @@ class NetAdminToolDB:
         self.engine = create_engine(connString)
         self.db = scoped_session(sessionmaker(bind=self.engine))
 
-    def add_device(self, name, type, description=""):
+    def add_device(self, name, type, ip_addr, description=""):
         """
         Add a Device, returns the new device's id.
         """
-        result = self.db.execute("INSERT INTO devices (name, device_type, description) \
-                                VALUES (:name, :type, :description) RETURNING id",
-                                {'name': name, 'type': type, 'description': description})
+        result = self.db.execute("INSERT INTO devices \
+                                (name, device_type, description, ip_addr) \
+                                VALUES (:name, :type, :description, :ip_addr) \
+                                 RETURNING id",
+                                {'name': name, 'type': type,
+                                'description': description, 'ip_addr':ip_addr})
 
         self.db.commit()
 
@@ -74,10 +77,11 @@ class NetAdminToolDB:
 
         self.db.execute("UPDATE devices \
                         SET name = :name, device_type = :type, \
-                        description = :description \
+                        description = :description, ip_addr = :ip_addr \
                         WHERE id = :id",
                         {'name': values['name'], 'type': values['device_type'],
-                        'description': values['description'], 'id': id})
+                        'description': values['description'],
+                        'ip_addr': values['ip_addr'], 'id': id})
         self.db.commit()
 
     def delete_device(self, id):
