@@ -27,6 +27,14 @@ class NetAdminToolDB:
     def add_device(self, name, type, ip_addr, description=""):
         """
         Add a Device, returns the new device's id.
+        TODO: add support for additional columns.  Could just require
+        name and device type (only two NOT NULL in database) to add a device.
+        From API, call update device to add other optional fields. Should
+        change that to iterate over dictionary values and have seperate update
+        statments, should be okay since commands not run until .commit()
+        Could use **kwargs to pass variable number of key,pair args.  Add this
+        to both add_device and to update device.  Or call update_device from
+        this function to avoid writing it out twice
         """
         result = self.db.execute("INSERT INTO devices \
                                 (name, device_type, description, ip_addr) \
