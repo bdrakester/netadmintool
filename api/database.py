@@ -24,24 +24,26 @@ class NetAdminToolDB:
         self.engine = create_engine(connString)
         self.db = scoped_session(sessionmaker(bind=self.engine))
 
-    def add_device(self, name, type, ip_addr, description=""):
+    def add_device(self, name, ip_addr, device_type, make, model,
+        sw_version, serial_number, datacenter, location, console="",
+        description="", notes=""):
         """
         Add a Device, returns the new device's id.
-        TODO: add support for additional columns.  Could just require
-        name and device type (only two NOT NULL in database) to add a device.
-        From API, call update device to add other optional fields. Should
-        change that to iterate over dictionary values and have seperate update
-        statments, should be okay since commands not run until .commit()
-        Could use **kwargs to pass variable number of key,pair args.  Add this
-        to both add_device and to update device.  Or call update_device from
-        this function to avoid writing it out twice
         """
         result = self.db.execute("INSERT INTO devices \
-                                (name, device_type, description, ip_addr) \
-                                VALUES (:name, :type, :description, :ip_addr) \
-                                 RETURNING id",
-                                {'name': name, 'type': type,
-                                'description': description, 'ip_addr':ip_addr})
+                                (name, ip_addr, device_type, make, model, \
+                                sw_version, serial_number, datacenter, \
+                                location, console, description, notes) \
+                                VALUES (:name, :ip_addr, :type, :make, \
+                                :model, :ver, :serial_num, :datacenter, \
+                                :loc, :con, :descr, :notes)  RETURNING id",
+                                {'name': name, 'ip_addr': ip_addr,
+                                'type': device_type, 'make': make,
+                                'model': model, 'ver': sw_version,
+                                'serial_num': serial_number,
+                                'datacenter': datacenter, 'loc': location,
+                                'con': console, 'descr': description,
+                                'notes': notes})
 
         self.db.commit()
 
@@ -78,19 +80,63 @@ class NetAdminToolDB:
         self.db.commit()
         return device
 
-    def update_device(self, id, values):
+    def update_device(self, id, **updates):
         """
-        Update device id with values dictionary.
+        Update device with id with named arguments
         """
 
-        self.db.execute("UPDATE devices \
-                        SET name = :name, device_type = :type, \
-                        description = :description, ip_addr = :ip_addr \
-                        WHERE id = :id",
-                        {'name': values['name'], 'type': values['device_type'],
-                        'description': values['description'],
-                        'ip_addr': values['ip_addr'], 'id': id})
+        for key, value in updates.items():
+            if key == 'name':
+                self.db.execute('UPDATE devices SET name = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'ip_addr':
+                self.db.execute('UPDATE devices SET ip_addr = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'device_type':
+                self.db.execute('UPDATE devices SET device_type = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'make':
+                self.db.execute('UPDATE devices SET make = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'model':
+                self.db.execute('UPDATE devices SET model = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'sw_version':
+                self.db.execute('UPDATE devices SET sw_version = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'serial_number':
+                self.db.execute('UPDATE devices SET serial_number = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'datacenter':
+                self.db.execute('UPDATE devices SET datacenter = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'location':
+                self.db.execute('UPDATE devices SET location = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'console':
+                self.db.execute('UPDATE devices SET console = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'description':
+                self.db.execute('UPDATE devices SET description = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+            if key == 'notes':
+                self.db.execute('UPDATE devices SET notes = :value \
+                                WHERE id = :id',
+                                {'value': value, 'id':id})
+
         self.db.commit()
+
 
     def delete_device(self, id):
         """

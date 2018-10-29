@@ -27,8 +27,12 @@ def main():
     print_response(resp)
 
     print(f'Adding Device {newName} ... ')
-    postData = {'name': newName, 'device_type':'test_type',
-                'description':f'Desc of {newName}', 'ip_addr': '192.168.1.2'}
+    postData = {'name': newName, 'ip_addr': '192.168.1.2',
+        'device_type':'test_type', 'make':'test make', 'model':'test model',
+        'sw_version': '1337', 'serial_number':'snTEST', 'datacenter':'Test DC',
+        'location': 'Test Location', 'console': 'Test 1',
+        'description':f'Desc of {newName}', 'notes':f'Notes re:{newName}'}
+
     print(f'POST Data = {postData}')
     print(f'POST {hostname}:5000/api/devices')
     resp = requests.post(f'http://{hostname}:5000/api/devices',json=postData)

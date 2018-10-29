@@ -1,34 +1,36 @@
 #!/usr/local/bin/python3
 # Used to test database functions, not part of application
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from configparser import ConfigParser
+#from sqlalchemy import create_engine
+#from sqlalchemy.orm import scoped_session, sessionmaker
+#from configparser import ConfigParser
 from database import NetAdminToolDB
-from flask import jsonify
+#from flask import jsonify
 
-config = ConfigParser()
-config.read("netadminapi.conf")
+db = NetAdminToolDB('netadminapi.conf')
 
-dbuser = config['DATABASE']['dbusername']
-dbpass = config['DATABASE']['dbpassword']
-dbhost = config['DATABASE']['hostname']
-dbport = config['DATABASE']['port']
+#config = ConfigParser()
+#config.read("netadminapi.conf")
 
-connString = f"postgresql://{dbuser}:{dbpass}@{dbhost}:{dbport}/netadmintool"
-engine = create_engine(connString)
-db = scoped_session(sessionmaker(bind=engine))
+#dbuser = config['DATABASE']['dbusername']
+#dbpass = config['DATABASE']['dbpassword']
+#dbhost = config['DATABASE']['hostname']
+#dbport = config['DATABASE']['port']
 
-name='Test501'
-type='TestType'
-description='Test description'
+#connString = f"postgresql://{dbuser}:{dbpass}@{dbhost}:{dbport}/netadmintool"
+#engine = create_engine(connString)
+#db = scoped_session(sessionmaker(bind=engine))
 
-result = db.execute("INSERT INTO devices (name, device_type, description) \
-                        VALUES (:name, :type, :description) RETURNING id",
-                        {'name': name, 'type': type, 'description': description})
-db.commit()
+#name='Test501'
+#type='TestType'
+#description='Test description'
 
-id = result.fetchone().id
+#result = db.execute("INSERT INTO devices (name, device_type, description) \
+#                        VALUES (:name, :type, :description) RETURNING id",
+#                        {'name': name, 'type': type, 'description': description})
+#db.commit()
+
+#id = result.fetchone().id
 
 #devices = db.execute("SELECT * FROM devices").fetchone()
 #print(devices)

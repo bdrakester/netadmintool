@@ -28,20 +28,36 @@ def get_devices():
                                     'id': device.id,
                                     'uri': uri,
                                     'name': device.name,
+                                    'ip_addr': device.ip_addr,
                                     'device_type': device.device_type,
+                                    'make': device.make,
+                                    'model': device.model,
+                                    'sw_version': device.sw_version,
+                                    'serial_number': device.serial_number,
+                                    'datacenter': device.datacenter,
+                                    'location': device.location,
+                                    'console': device.console,
                                     'description': device.description,
-                                    'ip_addr': device.ip_addr
+                                    'notes': device.notes
                                 })
     else:
         for device in devices:
             uri = url_for('get_device',device_id=device.id,_external=True)
             deviceList.append({
-                            'id': device.id,
-                            'uri': uri,
-                            'name': device.name,
-                            'device_type': device.device_type,
-                            'description': device.description,
-                            'ip_addr': device.ip_addr
+                                'id': device.id,
+                                'uri': uri,
+                                'name': device.name,
+                                'ip_addr': device.ip_addr,
+                                'device_type': device.device_type,
+                                'make': device.make,
+                                'model': device.model,
+                                'sw_version': device.sw_version,
+                                'serial_number': device.serial_number,
+                                'datacenter': device.datacenter,
+                                'location': device.location,
+                                'console': device.console,
+                                'description': device.description,
+                                'notes': device.notes
                             })
 
     if deviceList == []:
@@ -64,9 +80,17 @@ def get_device(device_id):
                                 'id': device.id,
                                 'uri': uri,
                                 'name': device.name,
+                                'ip_addr': device.ip_addr,
                                 'device_type': device.device_type,
+                                'make': device.make,
+                                'model': device.model,
+                                'sw_version': device.sw_version,
+                                'serial_number': device.serial_number,
+                                'datacenter': device.datacenter,
+                                'location': device.location,
+                                'console': device.console,
                                 'description': device.description,
-                                'ip_addr': device.ip_addr
+                                'notes': device.notes
                             }
                     })
 
@@ -84,13 +108,8 @@ def update_device(device_id):
     if input == None:
         return jsonify({'error': 'Invalid PUT request'}), 400
 
-    updates = dict()
-    updates['name'] = input.get('name',device.name)
-    updates['device_type'] = input.get('device_type',device.device_type)
-    updates['description'] = input.get('description', device.description)
-    updates['ip_addr'] = input.get('ip_addr', device.ip_addr)
-
-    netAdminToolDB.update_device(device_id, updates)
+    # Send input directly to update_device function, which checks each key.
+    netAdminToolDB.update_device(device_id, **input)
     device = netAdminToolDB.get_device(device_id)
     deviceDict = dict(device)
     uri = url_for('get_device',device_id=device.id,_external=True)
@@ -110,24 +129,41 @@ def add_device():
         return jsonify({'error': 'Invalid POST request, no data'}), 400
     if not 'name' in input:
         return jsonify({'error': 'Invalid POST request, missing name'}), 400
-    if not 'device_type' in input:
-        return jsonify({'error': 'Invalid POST request, missing device_type'}), 400
     if not 'ip_addr' in input:
         return jsonify({'error': 'Invalid POST request, missing ip_addr'}), 400
+    if not 'device_type' in input:
+        return jsonify({'error': 'Invalid POST request, missing device_type'}), 400
+    if not 'make' in input:
+        return jsonify({'error': 'Invalid POST request, missing make'}), 400
+    if not 'model' in input:
+        return jsonify({'error': 'Invalid POST request, missing model'}), 400
+    if not 'sw_version' in input:
+        return jsonify({'error': 'Invalid POST request, missing sw_version'}), 400
+    if not 'serial_number' in input:
+        return jsonify({'error': 'Invalid POST request, missing serial_number'}), 400
+    if not 'datacenter' in input:
+        return jsonify({'error': 'Invalid POST request, missing datacenter'}), 400
+    if not 'location' in input:
+        return jsonify({'error': 'Invalid POST request, missing location'}), 400
 
+    if not 'console' in input:
+        input['console'] = ''
     if not 'description' in input:
-        id = netAdminToolDB.add_device(input['name'],input['device_type'],
-            input['ip_addr'])
-        device = netAdminToolDB.get_device(id)
-        return jsonify({'success':dict(device)}), 201
+        input['description'] = ''
+    if not 'notes' in input:
+        input['notes'] = ''
 
-    id = netAdminToolDB.add_device(input['name'],input['device_type'],
-                            input['ip_addr'], input['description'])
+    id = netAdminToolDB.add_device(input['name'], input['ip_addr'],
+        input['device_type'], input['make'], input['model'],
+        input['sw_version'], input['serial_number'], input['datacenter'],
+        input['location'], input['console'], input['description'],
+        input['notes'])
+
     device = netAdminToolDB.get_device(id)
     deviceDict = dict(device)
     uri = url_for('get_device',device_id=device.id,_external=True)
     deviceDict['uri'] = uri
-    #del deviceDict['id']
+
     return jsonify({'device':deviceDict}), 201
 
 @app.route("/api/devices/<int:device_id>", methods=['DELETE'])

@@ -33,7 +33,31 @@
         {{ device.device_type }}
       </td>
       <td>
+        {{ device.make }}
+      </td>
+      <td>
+        {{ device.model }}
+      </td>
+      <td>
+        {{ device.sw_version }}
+      </td>
+      <td>
+        {{ device.serial_number }}
+      </td>
+      <td>
+        {{ device.datacenter }}
+      </td>
+      <td>
+        {{ device.location }}
+      </td>
+      <td>
+        {{ device.console }}
+      </td>
+      <td>
         {{ device.description }}
+      </td>
+      <td>
+        {{ device.notes }}
       </td>
     </tr>
     {% endfor %}
