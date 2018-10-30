@@ -3,8 +3,16 @@
 from flask import Flask, jsonify, request, url_for
 from database import NetAdminToolDB
 
+CONFIG_FILE = 'netadminapi.conf'
+TESTING_CONFIG_FILE = 'tests.conf'
+
 app = Flask(__name__)
-netAdminToolDB = NetAdminToolDB("netadminapi.conf")
+netAdminToolDB = NetAdminToolDB('netadminapi.conf')
+
+def create_test_app():
+    app = Flask(__name__)
+    netAdminToolDB = NetAdminToolDB('tests.conf')
+    return app
 
 @app.route("/api")
 def index():
@@ -186,4 +194,5 @@ def bad_request(error):
 
 
 if __name__ == '__main__':
+
     app.run(host='0.0.0.0',debug=True)
