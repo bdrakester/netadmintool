@@ -7,7 +7,8 @@
 from database import NetAdminToolDB
 #from flask import jsonify
 
-db = NetAdminToolDB('netadminapi.conf')
+#db = NetAdminToolDB('netadminapi.conf')
+db = NetAdminToolDB('tests.conf')
 
 #config = ConfigParser()
 #config.read("netadminapi.conf")

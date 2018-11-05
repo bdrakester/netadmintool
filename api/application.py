@@ -1,18 +1,15 @@
 #!/usr/local/bin/python3
 
-from flask import Flask, jsonify, request, url_for
+from flask import Flask, jsonify, request, url_for, g
 from database import NetAdminToolDB
 
 CONFIG_FILE = 'netadminapi.conf'
 TESTING_CONFIG_FILE = 'tests.conf'
 
 app = Flask(__name__)
+app.config['DATABASE'] = NetAdminToolDB(CONFIG_FILE)
 netAdminToolDB = NetAdminToolDB('netadminapi.conf')
-
-def create_test_app():
-    app = Flask(__name__)
-    netAdminToolDB = NetAdminToolDB('tests.conf')
-    return app
+#print('DEBUG: application.py - just created netAdminToolDB from netadminapi.conf')
 
 @app.route("/api")
 def index():
@@ -25,8 +22,10 @@ def get_devices():
     Name: returns all devices with that name
     """
     name = request.args.get('name')
-
+    netAdminToolDB = app.config['DATABASE']
+    #print(f'DEBUG application.py get_devices() - db = {db.dbname}')
     devices = netAdminToolDB.get_device()
+
     deviceList = []
     if name != None:
         for device in devices:
@@ -78,6 +77,7 @@ def get_device(device_id):
     """
     Return device with id device_id
     """
+    netAdminToolDB = app.config['DATABASE']
     device = netAdminToolDB.get_device(device_id)
 
     if device == None:
@@ -107,6 +107,7 @@ def update_device(device_id):
     """
     Update device with id device_id
     """
+    netAdminToolDB = app.config['DATABASE']
     device = netAdminToolDB.get_device(device_id)
     if device == None:
         return jsonify({'error': 'Device_id not found'}), 404

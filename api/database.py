@@ -21,6 +21,7 @@ class NetAdminToolDB:
         dbname = config['DATABASE']['dbname']
 
         connString = f"postgresql://{dbuser}:{dbpass}@{dbhost}:{dbport}/{dbname}"
+        self.dbname = dbname
         self.engine = create_engine(connString)
         self.db = scoped_session(sessionmaker(bind=self.engine))
 
