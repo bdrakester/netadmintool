@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-from flask import Flask, jsonify, request, url_for, g
+from flask import Flask, jsonify, request, url_for
 from database import NetAdminToolDB
 
 CONFIG_FILE = 'netadminapi.conf'
@@ -8,8 +8,7 @@ TESTING_CONFIG_FILE = 'tests.conf'
 
 app = Flask(__name__)
 app.config['DATABASE'] = NetAdminToolDB(CONFIG_FILE)
-netAdminToolDB = NetAdminToolDB('netadminapi.conf')
-#print('DEBUG: application.py - just created netAdminToolDB from netadminapi.conf')
+#netAdminToolDB = NetAdminToolDB('netadminapi.conf')
 
 @app.route("/api")
 def index():
@@ -23,7 +22,7 @@ def get_devices():
     """
     name = request.args.get('name')
     netAdminToolDB = app.config['DATABASE']
-    #print(f'DEBUG application.py get_devices() - db = {db.dbname}')
+    #print(f'DEBUG application.py get_devices() - db = {netAdminToolDB.dbname}')
     devices = netAdminToolDB.get_device()
 
     deviceList = []
@@ -162,6 +161,7 @@ def add_device():
     if not 'notes' in input:
         input['notes'] = ''
 
+    netAdminToolDB = app.config['DATABASE']
     id = netAdminToolDB.add_device(input['name'], input['ip_addr'],
         input['device_type'], input['make'], input['model'],
         input['sw_version'], input['serial_number'], input['datacenter'],
@@ -177,6 +177,7 @@ def add_device():
 
 @app.route("/api/devices/<int:device_id>", methods=['DELETE'])
 def delete_device(device_id):
+    netAdminToolDB = app.config['DATABASE']
     device = netAdminToolDB.get_device(device_id)
 
     if device == None:
@@ -195,5 +196,4 @@ def bad_request(error):
 
 
 if __name__ == '__main__':
-
     app.run(host='0.0.0.0',debug=True)

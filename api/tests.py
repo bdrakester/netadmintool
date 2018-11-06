@@ -2,18 +2,11 @@
 # Unit tests for database and api
 # Needs tests.conf file for database connection information
 
-## TODO - testing api currently connects to production database.  How to
-## get it to use the test database?  Pass the database file name as parameter
-## somehow
-## Think I have this working now - in application.py set database object
-## app.config['DATABASE'], still need to update rest of application.py to
-## look there for the application database object
-
 import os
 import unittest
 
 from database import NetAdminToolDB as DB
-from application import app, netAdminToolDB
+from application import app
 
 # Contains test database connection information
 CONFIG_FILE = 'tests.conf'
@@ -24,7 +17,6 @@ class Tests(unittest.TestCase):
     def setUpClass(self):
         #print('DEBUG: test.py Running setUpClass ...')
         self.db = DB(CONFIG_FILE)
-
 
     def setUp(self):
         #print('DEBUG: tests.py - Running setUp ...')
@@ -40,8 +32,6 @@ class Tests(unittest.TestCase):
         #print(f"DEBUG tests.py setUP() app.config[DATABASE] = {app.config['DATABASE'].dbname}")
         self.client = app.test_client()
         self.client.testing = True
-
-
 
 
     def test_add_device(self):
@@ -106,6 +96,56 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(json_data['devices']),2)
+
+    def test_api_get_device(self):
+        """ Test api get device id 1 """
+
+        res = self.client.get('/api/devices/1')
+        json_data = res.get_json()
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(json_data['device']['id'],1)
+
+    def test_api_update_device(self):
+        """ Test api update device id 1 """
+
+        res = self.client.put('/api/devices/1', json={
+            'description':'Updated Description of device 1'})
+        json_data = res.get_json()
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(json_data['device']['description'],
+            'Updated Description of device 1')
+
+    def test_api_add_device(self):
+        """ Test api adding a device """
+        newDevice = {'name': 'NewRouter2', 'ip_addr': '192.168.1.2',
+            'device_type':'test_type', 'make':'test make', 'model':'test model',
+            'sw_version': '1337', 'serial_number':'snTEST',
+            'datacenter':'Test DC', 'location': 'Test Location',
+            'console': 'Test 1', 'description':'Desc of NewRouter2 ',
+            'notes':'Notes re: NewRouter2'}
+
+        res = self.client.post('/api/devices', json=newDevice)
+        json_data = res.get_json()
+        self.assertEqual(res.status_code,201)
+        self.assertEqual(json_data['device']['sw_version'], '1337')
+
+
+    def test_api_delete_device(self):
+        """ Test api delete device id 1 """
+
+        res = self.client.delete('/api/devices/1')
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client.get('/api/devices/1')
+        self.assertEqual(res.status_code, 404)
+
+    def test_api_get_device_name(self):
+        """ Test api get device by name query string """
+
+        res = self.client.get('/api/devices?name=TEST-firewall1')
+        json_data = res.get_json()
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(json_data['devices'][0]['notes'],'Notes for firewall1')
 
 
 if __name__ == "__main__":
