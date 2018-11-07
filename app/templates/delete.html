@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container-fluid">
+  <h4> {{ message }} </h4>
+  <a href="{{ url_for('devices') }}" class="btn btn-primary">Go Back</a>
+</div>
+
+{% endblock %}

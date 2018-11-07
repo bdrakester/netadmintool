@@ -1,12 +1,17 @@
 {% extends "layout.html" %}
 
+{% block head %}
+<!--<script src="{{ url_for('static', filename='js/device.js') }}"></script>-->
+{% endblock %}
+
 {% block body %}
+<div class="container-fluid">
   <h4>Device Details</h4>
 
   <ul>
     <li><strong>Name:</strong> {{ device.name }}</li>
     <li><strong>IP Address:</strong> {{ device.ip_addr }}</li>
-    <li><strong>Type:</strong> {{ device.device_type }}</li>
+    <li><strong>Device Type:</strong> {{ device.device_type }}</li>
     <li><strong>Make:</strong> {{ device.make }}</li>
     <li><strong>Model:</strong> {{ device.model }}</li>
     <li><strong>SW Version:</strong> {{ device.sw_version }}</li>
@@ -18,4 +23,39 @@
     <li><strong>Notes:</strong> {{ device.notes }}</li>
   </ul>
 
+  <form action="{{ url_for('device', device_id=device.id) }}" method="POST">
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label for="attribute">Choose ...</label>
+        <select id="attribute" class="form-control" name="attribute">
+          <option selected value="name">Name</option>
+          <option value="ip_address">IP Address</option>
+          <option value="device_type">Device Type</option>
+          <option value="make">Make</option>
+          <option value="model">Model</option>
+          <option value="sw_version">SW Version</option>
+          <option value="serial_number">Serial Number</option>
+          <option value="datacenter">Datacenter</option>
+          <option value="location">Location</option>
+          <option value="console">Console</option>
+          <option value="description">Description</option>
+          <option value="notes">Notes</option>
+        </select>
+      </div>
+      <div class="form-group col-md-4">
+        <label for="new_value">New Value</label>
+        <input type="text" class="form-control" id="new_value" name="new_value">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <button type="submit" class="btn btn-primary" id="update_button">Update</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- <a href="{{ url_for('device',device_id=device.id) }}" class="btn btn-primary">Update</a>-->
+  <a href="{{ url_for('delete_device',device_id=device.id) }}" class="btn btn-primary">Delete</a>
+
+</div>
 {% endblock %}
