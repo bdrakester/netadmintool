@@ -21,10 +21,10 @@ class Tests(unittest.TestCase):
     def setUp(self):
         #print('DEBUG: tests.py - Running setUp ...')
         self.db.create_tables()
-        self.db.add_device('TEST-firewall1', '2.2.2.2', 'cisco_asa', 'Cisco',
+        self.db.add_device('TEST-firewall1', '2.2.2.2', 'Cisco',
             'ASA 5525-X', '9.8', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
             'NGFW', 'Notes for firewall1')
-        self.db.add_device('TEST-switch1', '3.3.3.3', 'cisco_sg', 'Cisco', 'SG500',
+        self.db.add_device('TEST-switch1', '3.3.3.3', 'Cisco', 'SG500',
             '3.1.4', 'sn9876', 'Boston', 'Rack 2', 'Serial 3', 'Core switch',
             'Notes for switch1')
 
@@ -38,7 +38,7 @@ class Tests(unittest.TestCase):
         """ Test adding a device to the database """
 
         #print('Running test_add_device ... ')
-        res = self.db.add_device('TEST-router1','1.1.1.1','cisco_ios','Cisco','2900',
+        res = self.db.add_device('TEST-router1','1.1.1.1', 'Cisco','2900',
         '15.4','sn1234','Boston','Rack 1','Serial 1','Internet router',
         'Notes for router1')
 
@@ -66,7 +66,7 @@ class Tests(unittest.TestCase):
 
         #print('Running test_get_device_name ...')
         res = self.db.get_device_name('TEST-firewall1')
-        self.assertEqual(res.device_type,'cisco_asa')
+        self.assertEqual(res.serial_number,'sn7890')
 
     def test_update_device(self):
         """ Test updating a device """
@@ -118,7 +118,7 @@ class Tests(unittest.TestCase):
     def test_api_add_device(self):
         """ Test api adding a device """
         newDevice = {'name': 'NewRouter2', 'ip_addr': '192.168.1.2',
-            'device_type':'test_type', 'make':'test make', 'model':'test model',
+            'make':'test make', 'model':'test model',
             'sw_version': '1337', 'serial_number':'snTEST',
             'datacenter':'Test DC', 'location': 'Test Location',
             'console': 'Test 1', 'description':'Desc of NewRouter2 ',

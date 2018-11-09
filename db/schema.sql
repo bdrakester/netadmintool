@@ -13,3 +13,5 @@ CREATE TABLE devices (
     description VARCHAR,
     notes VARCHAR
 );
+
+ALTER TABLE devices DROP COLUMN device_type;

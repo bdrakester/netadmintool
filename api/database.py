@@ -25,21 +25,20 @@ class NetAdminToolDB:
         self.engine = create_engine(connString)
         self.db = scoped_session(sessionmaker(bind=self.engine))
 
-    def add_device(self, name, ip_addr, device_type, make, model,
+    def add_device(self, name, ip_addr, make, model,
         sw_version, serial_number, datacenter, location, console="",
         description="", notes=""):
         """
         Add a Device, returns the new device's id.
         """
         result = self.db.execute("INSERT INTO devices \
-                                (name, ip_addr, device_type, make, model, \
+                                (name, ip_addr, make, model, \
                                 sw_version, serial_number, datacenter, \
                                 location, console, description, notes) \
-                                VALUES (:name, :ip_addr, :type, :make, \
+                                VALUES (:name, :ip_addr, :make, \
                                 :model, :ver, :serial_num, :datacenter, \
                                 :loc, :con, :descr, :notes)  RETURNING id",
-                                {'name': name, 'ip_addr': ip_addr,
-                                'type': device_type, 'make': make,
+                                {'name': name, 'ip_addr': ip_addr, 'make': make,
                                 'model': model, 'ver': sw_version,
                                 'serial_num': serial_number,
                                 'datacenter': datacenter, 'loc': location,
@@ -93,10 +92,6 @@ class NetAdminToolDB:
                                 {'value': value, 'id':id})
             if key == 'ip_addr':
                 self.db.execute('UPDATE devices SET ip_addr = :value \
-                                WHERE id = :id',
-                                {'value': value, 'id':id})
-            if key == 'device_type':
-                self.db.execute('UPDATE devices SET device_type = :value \
                                 WHERE id = :id',
                                 {'value': value, 'id':id})
             if key == 'make':
@@ -158,7 +153,6 @@ class NetAdminToolDB:
             id SERIAL PRIMARY KEY, \
             name VARCHAR NOT NULL, \
             ip_addr INET NOT NULL, \
-            device_type VARCHAR NOT NULL, \
             make VARCHAR NOT NULL, \
             model VARCHAR NOT NULL, \
             sw_version VARCHAR NOT NULL, \

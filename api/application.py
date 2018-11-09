@@ -35,7 +35,6 @@ def get_devices():
                                     'uri': uri,
                                     'name': device.name,
                                     'ip_addr': device.ip_addr,
-                                    'device_type': device.device_type,
                                     'make': device.make,
                                     'model': device.model,
                                     'sw_version': device.sw_version,
@@ -54,7 +53,6 @@ def get_devices():
                                 'uri': uri,
                                 'name': device.name,
                                 'ip_addr': device.ip_addr,
-                                'device_type': device.device_type,
                                 'make': device.make,
                                 'model': device.model,
                                 'sw_version': device.sw_version,
@@ -88,7 +86,6 @@ def get_device(device_id):
                                 'uri': uri,
                                 'name': device.name,
                                 'ip_addr': device.ip_addr,
-                                'device_type': device.device_type,
                                 'make': device.make,
                                 'model': device.model,
                                 'sw_version': device.sw_version,
@@ -122,7 +119,7 @@ def update_device(device_id):
     deviceDict = dict(device)
     uri = url_for('get_device',device_id=device.id,_external=True)
     deviceDict['uri'] = uri
-    #del deviceDict['id']
+
     return jsonify({'device': deviceDict}), 200
 
 
@@ -139,8 +136,6 @@ def add_device():
         return jsonify({'error': 'Invalid POST request, missing name'}), 400
     if not 'ip_addr' in input:
         return jsonify({'error': 'Invalid POST request, missing ip_addr'}), 400
-    if not 'device_type' in input:
-        return jsonify({'error': 'Invalid POST request, missing device_type'}), 400
     if not 'make' in input:
         return jsonify({'error': 'Invalid POST request, missing make'}), 400
     if not 'model' in input:
@@ -163,10 +158,9 @@ def add_device():
 
     netAdminToolDB = app.config['DATABASE']
     id = netAdminToolDB.add_device(input['name'], input['ip_addr'],
-        input['device_type'], input['make'], input['model'],
-        input['sw_version'], input['serial_number'], input['datacenter'],
-        input['location'], input['console'], input['description'],
-        input['notes'])
+        input['make'], input['model'], input['sw_version'],
+        input['serial_number'], input['datacenter'], input['location'],
+        input['console'], input['description'], input['notes'])
 
     device = netAdminToolDB.get_device(id)
     deviceDict = dict(device)
