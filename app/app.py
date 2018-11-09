@@ -16,7 +16,7 @@ api = f'http://{hostname}:{port}/api'
 def index():
     return render_template('index.html')
 
-@app.route('/devices')
+@app.route('/devices', methods=['GET'])
 def devices():
     resp = requests.get(f'{api}/devices')
     devices = resp.json()['devices']
@@ -55,6 +55,27 @@ def delete_device(device_id):
         return render_template('delete.html', message = error)
 
     return render_template('delete.html', message = success)
+
+@app.route('/devices/add', methods=['GET', 'POST'])
+def add_device():
+    if request.method == 'POST':
+        new_device = dict()
+        for attribute in request.form:
+            new_device[attribute] = request.form.get(attribute)
+
+        resp = requests.post(f'{api}/devices', json=new_device)
+        if resp.status_code == 400:
+            error = resp.json()['error']
+            return render_template('add.html', message = error)
+
+        if resp.status_code == 201:
+            device = resp.json()['device']
+            return redirect((url_for('device', device_id = device['id'])))
+
+    return render_template('add.html')
+
+
+
 
 
 if __name__ == '__main__':
