@@ -7,73 +7,73 @@
     <br>
   {% endif %}
   <form action="{{ url_for('add_device')}}" method="POST">
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="name" class="col-form-label col-md-2">Name</label>
       <div class="col-md-4">
-        <input type="text" class="form-control" id="name" name="name">
+        <input type="text" class="form-control" id="name" name="name" required>
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="ip_addr" class="col-form-label col-md-2">IP Address</label>
       <div class="col-md-4">
-        <input type="text" class="form-control" id="ip_addr" name="ip_addr">
+        <input type="text" class="form-control" id="ip_addr" name="ip_addr" required>
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="device_type" class="col-form-label col-md-2">Device Type</label>
       <div class="col-md-4">
-        <input type="text" class="form-control" id="device_type" name="device_type">
+        <input type="text" class="form-control" id="device_type" name="device_type" required>
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="make" class="col-form-label col-md-2">Make</label>
       <div class="col-md-4">
-        <input type="text" class="form-control" id="make" name="make">
+        <input type="text" class="form-control" id="make" name="make" required>
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="model" class="col-form-label col-md-2">Model</label>
       <div class="col-md-4">
-        <input type="text" class="form-control" id="model" name="model">
+        <input type="text" class="form-control" id="model" name="model" required>
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="sw_version" class="col-form-label col-md-2">SW Version</label>
       <div class="col-md-4">
-        <input type="text" class="form-control" id="sw_version" name="sw_version">
+        <input type="text" class="form-control" id="sw_version" name="sw_version" required>
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="serial_number" class="col-form-label col-md-2">Serial Number</label>
       <div class="col-md-4">
-        <input type="text" class="form-control" id="serial_number" name="serial_number">
+        <input type="text" class="form-control" id="serial_number" name="serial_number" required>
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="datacenter" class="col-form-label col-md-2">Datacenter</label>
       <div class="col-md-4">
         <input type="text" class="form-control" id="datacenter" name="datacenter">
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row required">
       <label for="location" class="col-form-label col-md-2">Location</label>
       <div class="col-md-4">
         <input type="text" class="form-control" id="location" name="location">
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row optional">
       <label for="console" class="col-form-label col-md-2">Console</label>
       <div class="col-md-4">
         <input type="text" class="form-control" id="console" name="console">
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row optional">
       <label for="description" class="col-form-label col-md-2">Description</label>
       <div class="col-md-4">
         <input type="text" class="form-control" id="description" name="description">
       </div>
     </div>
-    <div class="form-group row">
+    <div class="form-group row optional">
       <label for="notes" class="col-form-label col-md-2">Notes</label>
       <div class="col-md-4">
         <input type="text" class="form-control" id="notes" name="notes">

@@ -70,12 +70,9 @@ def add_device():
 
         if resp.status_code == 201:
             device = resp.json()['device']
-            return redirect((url_for('device', device_id = device['id'])))
+            return redirect((url_for('devices', device_id = device['id'])))
 
     return render_template('add.html')
-
-
-
 
 
 if __name__ == '__main__':

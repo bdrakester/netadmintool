@@ -4,7 +4,10 @@ h2,h4 {
 table{
   width: 100%;
 }
-/*th, td{
-  border: 1px solid black;
-  padding: 15px;
-}*/
+.form-group.required label {
+  font-weight:bold;
+}
+.form-group.optional label:after {
+  content:"  (optional)"
+
+}
