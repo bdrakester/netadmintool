@@ -52,9 +52,11 @@ def delete_device(device_id):
     resp = requests.delete(f'{api}/devices/{device_id}')
 
     if resp.status_code != 200:
-        return render_template('delete.html', message = error)
+        return render_template('error.html', message = error)
 
-    return render_template('delete.html', message = success)
+    #return render_template('delete.html', message = success)
+    return redirect((url_for('devices')))
+
 
 @app.route('/devices/add', methods=['GET', 'POST'])
 def add_device():
