@@ -12,3 +12,19 @@ CREATE TABLE devices (
     description VARCHAR,
     notes VARCHAR
 );
+
+CREATE TABLE roles (
+  id SERIAL PRIMARY KEY,
+  role_name VARCHAR NOT NULL UNIQUE
+);
+
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR NOT NULL UNIQUE,
+  password VARCHAR NOT NULL,
+  display_name VARCHAR NOT NULL,
+  role_id INTEGER REFERENCES roles
+);
+
+INSERT INTO roles (role_name) VALUES ('admin');
+INSERT INTO roles (role_name) VALUES ('readonly');

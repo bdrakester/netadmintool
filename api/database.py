@@ -164,3 +164,33 @@ class NetAdminToolDB:
             notes VARCHAR)')
 
         self.db.commit()
+
+    def get_role(self, role_id):
+        """
+        Returns a dictionary of role with id.
+        """
+        role = self.db.execute("SELECT * FROM devices WHERE id = :role_id",
+            {'role_id': role_id}).fetchone()
+
+        self.db.commit()
+        return role
+
+    def get_role_name(self, role_name):
+        """
+        Returns a dictionary of role with name
+        """
+        role = self.db.execute("SELECT * FROM devices WHERE name = :role_name",
+            {'role_name': role_name}).fetchone()
+
+        self.db.commit()
+        return role
+
+
+    def add_user(self, username, password, role_name):
+        """
+        Add a user
+        """
+        role =
+        self.db.execute("INSERT INTO users (username, password, display_name, \
+            role_id) VALUES (:username, :password, :role_id)",
+            {'username': username, 'password': password, 'role_id': role_id})
