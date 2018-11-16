@@ -83,6 +83,14 @@ def add_device():
 
 @app.route('/login', methods=['POST'])
 def login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    result = authentication_user(username, password)
+
+    if result = True:
+
+
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
