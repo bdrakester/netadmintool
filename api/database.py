@@ -136,7 +136,7 @@ class NetAdminToolDB:
 
     def delete_device(self, id):
         """
-        Delete device id from that database
+        Delete device with id from database
         """
         self.db.execute("DELETE FROM devices WHERE id = :id", {'id': id})
         self.db.commit()
@@ -148,6 +148,9 @@ class NetAdminToolDB:
         """
 
         self.db.execute('DROP TABLE IF EXISTS devices')
+        self.db.execute('DROP TABLE IF EXISTS roles CASCADE')
+        self.db.execute('DROP TABLE IF EXISTS users')
+
 
         self.db.execute('CREATE TABLE devices ( \
             id SERIAL PRIMARY KEY, \
@@ -163,13 +166,27 @@ class NetAdminToolDB:
             description VARCHAR, \
             notes VARCHAR)')
 
+        self.db.execute('CREATE TABLE roles ( \
+            id SERIAL PRIMARY KEY, \
+            role_name VARCHAR NOT NULL UNIQUE)')
+
+        self.db.execute('CREATE TABLE users ( \
+            id SERIAL PRIMARY KEY, \
+            username VARCHAR NOT NULL UNIQUE, \
+            password VARCHAR NOT NULL, \
+            display_name VARCHAR NOT NULL, \
+            role_id INTEGER REFERENCES roles)')
+
+        self.db.execute("INSERT INTO roles (role_name) VALUES ('admin')")
+        self.db.execute("INSERT INTO roles (role_name) VALUES ('readonly')")
+
         self.db.commit()
 
     def get_role(self, role_id):
         """
-        Returns a dictionary of role with id.
+        Returns a dictionary of role with role_id.
         """
-        role = self.db.execute("SELECT * FROM devices WHERE id = :role_id",
+        role = self.db.execute("SELECT * FROM roles WHERE id = :role_id",
             {'role_id': role_id}).fetchone()
 
         self.db.commit()
@@ -179,18 +196,90 @@ class NetAdminToolDB:
         """
         Returns a dictionary of role with name
         """
-        role = self.db.execute("SELECT * FROM devices WHERE name = :role_name",
+        role = self.db.execute("SELECT * FROM roles WHERE role_name = :role_name",
             {'role_name': role_name}).fetchone()
 
         self.db.commit()
         return role
 
 
-    def add_user(self, username, password, role_name):
+    def add_user(self, username, password, display_name, role_name):
         """
-        Add a user
+        Add a user, return's the new user's id
         """
-        role =
-        self.db.execute("INSERT INTO users (username, password, display_name, \
-            role_id) VALUES (:username, :password, :role_id)",
-            {'username': username, 'password': password, 'role_id': role_id})
+        role = self.get_role_name(role_name)
+        result = self.db.execute("INSERT INTO users (username, password, display_name, \
+            role_id) VALUES (:username, :password, :display_name, :role_id) RETURNING id",
+            {'username': username, 'password': password,
+            'display_name': display_name, 'role_id': role.id})
+
+        self.db.commit()
+
+        return result.fetchone().id
+
+
+    def get_user(self, user_id=0):
+        """
+        Return a dictionary of user with user_id. If id is not provided,
+        returns a list of dictionaries of all users in database.
+        Does not return password attribute
+        """
+        if user_id != 0:
+            #user = self.db.execute("SELECT * FROM users WHERE id = :user_id",
+            #    {'user_id': user_id}).fetchone()
+            user = self.db.execute("SELECT users.id, username, display_name, role_name \
+                FROM users JOIN roles ON users.role_id = roles.id \
+                WHERE users.id = :user_id", {'user_id': user_id}).fetchone()
+        else:
+            #user = self.db.execute("SELECT * FROM users").fetchall()
+            user = self.db.execute("SELECT users.id, username, display_name, role_name \
+                FROM users JOIN roles ON users.role_id = roles.id").fetchall()
+
+        self.db.commit()
+        return user
+
+    def get_user_name(self, username):
+        """
+        Return a dictionary of user with username.
+        Does not return password attribute
+        """
+        #user = self.db.execute("SELECT * FROM users WHERE username = :username",
+        #    {'username': username}).fetchone()
+        user = self.db.execute("SELECT users.id, username, display_name, role_name \
+            FROM users JOIN roles ON users.role_id = roles.id \
+            WHERE users.username = :username", {'username': username}).fetchone()
+        self.db.commit()
+        return user
+
+    def update_user(self, user_id, **updates):
+        """
+        Update user with id using named arguments
+        """
+        for key, value in updates.items():
+            if key == 'username':
+                self.db.execute("UPDATE users SET username = :value \
+                                WHERE id = :id",
+                                {'value': value, 'id': user_id})
+            if key == 'password':
+                self.db.execute("UPDATE users SET password = :value \
+                                WHERE id = :id",
+                                {'value': value, 'id': user_id})
+            if key == 'display_name':
+                self.db.execute("UPDATE users SET display_name = :value \
+                                WHERE id = :id",
+                                {'value': value, 'id': user_id})
+            if key == 'role':
+                role = self.get_role_name(value)
+                if role != None:
+                    self.db.execute("UPDATE users SET role_id = :value \
+                                    WHERE id = :id",
+                                    {'value': role.id, 'id': user_id})
+
+        self.db.commit()
+
+    def delete_user(self, user_id):
+        """
+        Delete user with user_id from database
+        """
+        self.db.execute("DELETE FROM users WHERE id = :id", {'id': user_id})
+        self.db.commit()

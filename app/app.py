@@ -19,8 +19,13 @@ def index():
 @app.route('/devices', methods=['GET'])
 def devices():
     resp = requests.get(f'{api}/devices')
-    devices = resp.json()['devices']
-    return render_template('devices.html', devices = devices)
+    if resp.status_code == 200:
+        devices = resp.json()['devices']
+        return render_template('devices.html', devices = devices)
+    else:
+        return render_template('devices.html')
+
+
 
 @app.route('/devices/<int:device_id>', methods=['GET'])
 def device(device_id):

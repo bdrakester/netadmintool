@@ -7,11 +7,18 @@ def main():
     print('Net Admin Tool Database Import')
     file = open('devices.csv')
     reader = csv.reader(file)
-    for name, ip_addr, type, make, model, sw_version, serial, datacenter, \
+    for name, ip_addr, make, model, sw_version, serial, datacenter, \
         location, console, descr, notes in reader:
-        db.add_device(name, ip_addr, type, make, model, sw_version, serial,
+        db.add_device(name, ip_addr, make, model, sw_version, serial,
             datacenter, location, console, descr, notes)
         print(f'Imported name = {name}  ip_addr = {ip_addr}')
+    file.close()
+
+    with open('users.csv') as usersFile:
+        reader = csv.reader(usersFile)
+        for username, password, display_name, role_name in reader:
+            db.add_user(username,password,display_name,role_name)
+        print(f'Imported user = {user}')
 
 if __name__ == '__main__':
     main()

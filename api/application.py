@@ -17,8 +17,9 @@ def index():
 @app.route("/api/devices", methods=['GET'])
 def get_devices():
     """
-    Return all devices. Support query strings: name.
-    Name: returns all devices with that name
+    Return all devices.
+    Supported query strings:
+        name: returns all devices with that name
     """
     name = request.args.get('name')
     netAdminToolDB = app.config['DATABASE']
@@ -171,6 +172,9 @@ def add_device():
 
 @app.route("/api/devices/<int:device_id>", methods=['DELETE'])
 def delete_device(device_id):
+    """
+    Delete device with device_id
+    """
     netAdminToolDB = app.config['DATABASE']
     device = netAdminToolDB.get_device(device_id)
 
@@ -180,6 +184,127 @@ def delete_device(device_id):
     netAdminToolDB.delete_device(device_id)
     return jsonify({'result': True})
 
+@app.route("/api/users", methods=['GET'])
+def get_users():
+    """
+    Return all users. Does not return password
+    Supported query strings:
+        username: returns user with supplied name
+    """
+    username = request.args.get('username')
+    netAdminToolDB = app.config['DATABASE']
+    if username != None:
+        users = []
+        users.append(netAdminToolDB.get_user_name(username))
+    else:
+        users = netAdminToolDB.get_user()
+
+    userList = []
+    for user in users:
+        uri = url_for('get_user', user_id=user.id,_external=True)
+        #role = netAdminToolDB.get_role(user.role_id)
+        userList.append({
+                        'id': user.id,
+                        'uri': uri,
+                        'username': user.username,
+                        'display_name': user.display_name,
+                        'role': user.role_name
+                        })
+    if userList == []:
+        return jsonify({'error': 'No users found'}), 404
+
+    return jsonify({'users': userList })
+
+@app.route("/api/users/<int:user_id>", methods=['GET'])
+def get_user(user_id):
+    """
+    Return user with id user_id
+    """
+    netAdminToolDB = app.config['DATABASE']
+    user = netAdminToolDB.get_user(user_id)
+
+    if user == None:
+        return jsonify({'error': 'User_id not found'}), 404
+
+    uri = url_for('get_user', user_id=user.id, _external=True)
+    return jsonify({'user':{
+                            'id': user.id,
+                            'uri': uri,
+                            'username': user.username,
+                            'display_name': user.display_name,
+                            'role': user.role_name
+                            }
+                    })
+
+@app.route("/api/users/<int:user_id>", methods=['PUT'])
+def update_user(user_id):
+    """
+    Update user with user_id
+    """
+    netAdminToolDB = app.config['DATABASE']
+    user = netAdminToolDB.get_user(user_id)
+    if user == None:
+        return jsonify({'error': 'User_id not found'}), 404
+
+    input = request.get_json()
+
+    if input == None:
+        return jsonfiy({'error': 'Invalid PUT request'}), 400
+
+    # Send input directly to update_user function, which checks each key
+    netAdminToolDB.update_user(user_id, **input)
+    user = netAdminToolDB.get_user(user_id)
+    userDict = dict(user)
+    uri = url_for('get_user', user_id=user.id, _external=True)
+    userDict['uri'] = uri
+
+    return jsonify({'user': userDict}), 200
+
+
+@app.route("/api/users", methods=['POST'])
+def add_user():
+    """
+    Add a new user
+    """
+    input = request.get_json()
+
+    if input == None:
+        return jsonify({'error': 'Invalid POST request, no data'}), 400
+    if not 'username' in input:
+        return jsonify({'error': 'Invalid POST request, missing username'}), 400
+    if not 'password' in input:
+        return jsonify({'error': 'Invalid POST request, missing password'}), 400
+    if not 'display_name' in input:
+        return jsonify({'error': 'Invalid POST request, missing display_name'}), 400
+    if not 'role' in input:
+        return jsonify({'error': 'Invalid POST request, missing role'}), 400
+
+    netAdminToolDB = app.config['DATABASE']
+    id = netAdminToolDB.add_user(input['username'], input['password'],
+        input['display_name'], input['role'])
+
+    newUser = netAdminToolDB.get_user(id)
+    newUserDict = dict(newUser)
+    uri = url_for('get_user', user_id=newUser.id, _external=True)
+    newUserDict['uri'] = uri
+
+    return jsonify({'user': newUserDict}), 201
+
+@app.route("/api/users/<int:user_id>", methods=['DELETE'])
+def delete_user(user_id):
+    """
+    Delete user with user_id
+    """
+    netAdminToolDB = app.config['DATABASE']
+    user = netAdminToolDB.get_user(user_id)
+
+    if user == None:
+        return jsonify({'error': 'User_id not found'}), 404
+
+    netAdminToolDB.delete_user(user_id)
+    return jsonify({'result': True})
+
+
 @app.errorhandler(400)
 def bad_request(error):
     return jsonify({'error': 'Bad request'}), 400
@@ -187,6 +312,7 @@ def bad_request(error):
 @app.errorhandler(404)
 def bad_request(error):
     return jsonify({'error': 'Not found'}), 404
+
 
 
 if __name__ == '__main__':
