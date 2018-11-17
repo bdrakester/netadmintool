@@ -283,3 +283,17 @@ class NetAdminToolDB:
         """
         self.db.execute("DELETE FROM users WHERE id = :id", {'id': user_id})
         self.db.commit()
+
+    def authenticate_user(self, username, password):
+        """
+        Verify username and password
+        """
+        result = self.db.execute("SELECT id FROM users \
+                WHERE username = :username AND password = :password",
+                {'username': username, 'password': password}).fetchone()
+        self.db.commit()
+        if None == result:
+            return False
+
+        else:
+            return True

@@ -1,26 +1,26 @@
 #!/usr/local/bin/python3
 # Used to test database functions, not part of application
 
-#from sqlalchemy import create_engine
-#from sqlalchemy.orm import scoped_session, sessionmaker
-#from configparser import ConfigParser
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+from configparser import ConfigParser
 from database import NetAdminToolDB
 #from flask import jsonify
 
 #db = NetAdminToolDB('netadminapi.conf')
 db = NetAdminToolDB('tests.conf')
+#self.db.execute("SELECT id FROM users WHERE  username='adminuser' AND password='password2')
+config = ConfigParser()
+config.read("netadminapi.conf")
 
-#config = ConfigParser()
-#config.read("netadminapi.conf")
+dbuser = config['DATABASE']['dbusername']
+dbpass = config['DATABASE']['dbpassword']
+dbhost = config['DATABASE']['hostname']
+dbport = config['DATABASE']['port']
 
-#dbuser = config['DATABASE']['dbusername']
-#dbpass = config['DATABASE']['dbpassword']
-#dbhost = config['DATABASE']['hostname']
-#dbport = config['DATABASE']['port']
-
-#connString = f"postgresql://{dbuser}:{dbpass}@{dbhost}:{dbport}/netadmintool"
-#engine = create_engine(connString)
-#db = scoped_session(sessionmaker(bind=engine))
+connString = f"postgresql://{dbuser}:{dbpass}@{dbhost}:{dbport}/netadmintool"
+engine = create_engine(connString)
+db = scoped_session(sessionmaker(bind=engine))
 
 #name='Test501'
 #type='TestType'

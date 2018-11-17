@@ -22,65 +22,65 @@
     <li><strong>Description:</strong> {{ device.description }}</li>
     <li><strong>Notes:</strong> {{ device.notes }}</li>
   </ul>
-
-  <form action="{{ url_for('device', device_id=device.id) }}" method="POST">
-    <div class="form-row">
-      <div class="form-group col-md-4">
-        <label for="attribute">Choose ...</label>
-        <select id="attribute" class="form-control" name="attribute">
-          <option selected value="name">Name</option>
-          <option value="ip_address">IP Address</option>
-          <option value="make">Make</option>
-          <option value="model">Model</option>
-          <option value="sw_version">SW Version</option>
-          <option value="serial_number">Serial Number</option>
-          <option value="datacenter">Datacenter</option>
-          <option value="location">Location</option>
-          <option value="console">Console</option>
-          <option value="description">Description</option>
-          <option value="notes">Notes</option>
-        </select>
-      </div>
-      <div class="form-group col-md-4">
-        <label for="new_value">New Value</label>
-        <input type="text" class="form-control" id="new_value" name="new_value">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group col-md-4">
-        <button type="submit" class="btn btn-primary" id="update_button">Update</button>
-      </div>
-    </div>
-  </form>
-
-  <!-- <a href="{{ url_for('device',device_id=device.id) }}" class="btn btn-primary">Update</a>-->
-  <!--<a href="{{ url_for('delete_device',device_id=device.id) }}" class="btn btn-primary">Delete</a>-->
-  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmDeleteModal">
-    Delete
-  </button>
-
-  <!-- Confirm Delete Modal -->
-  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="confirmDeleteModalLabel">Delete Device?</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+  {% if current_user.is_authenticated and current_user.role == 'admin' %}
+    <form action="{{ url_for('device', device_id=device.id) }}" method="POST">
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="attribute">Choose ...</label>
+          <select id="attribute" class="form-control" name="attribute">
+            <option selected value="name">Name</option>
+            <option value="ip_address">IP Address</option>
+            <option value="make">Make</option>
+            <option value="model">Model</option>
+            <option value="sw_version">SW Version</option>
+            <option value="serial_number">Serial Number</option>
+            <option value="datacenter">Datacenter</option>
+            <option value="location">Location</option>
+            <option value="console">Console</option>
+            <option value="description">Description</option>
+            <option value="notes">Notes</option>
+          </select>
         </div>
-        <div class="modal-body">
-          Deleting a device will permanently remove it.
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">No, Keep Device</button>
-          <!--<button type="button" class="btn btn-primary">Yes, Delete Device</button>-->
-          <a href="{{ url_for('delete_device',device_id=device.id) }}" class="btn btn-primary">Yes, Delete Device</a>
+        <div class="form-group col-md-4">
+          <label for="new_value">New Value</label>
+          <input type="text" class="form-control" id="new_value" name="new_value">
         </div>
       </div>
-    </div>
-  </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <button type="submit" class="btn btn-primary" id="update_button">Update</button>
+        </div>
+      </div>
+    </form>
 
+    <!-- <a href="{{ url_for('device',device_id=device.id) }}" class="btn btn-primary">Update</a>-->
+    <!--<a href="{{ url_for('delete_device',device_id=device.id) }}" class="btn btn-primary">Delete</a>-->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmDeleteModal">
+      Delete
+    </button>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmDeleteModalLabel">Delete Device?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Deleting a device will permanently remove it.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">No, Keep Device</button>
+            <!--<button type="button" class="btn btn-primary">Yes, Delete Device</button>-->
+            <a href="{{ url_for('delete_device',device_id=device.id) }}" class="btn btn-primary">Yes, Delete Device</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
   <!-- Scripts added to layout for Login Modal -->
   <!--
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

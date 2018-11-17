@@ -151,6 +151,14 @@ class Tests(unittest.TestCase):
 
         self.assertEqual(res,None)
 
+    def test_authenticate_user(self):
+        """ Test authenticating a user """
+        res = self.db.authenticate_user('TestAdmin', 'password')
+        self.assertEqual(res,True)
+
+        res = self.db.authenticate_user('TestAdmin', 'badpassword')
+        self.assertEqual(res,False)
+
 
 
 
@@ -267,6 +275,22 @@ class Tests(unittest.TestCase):
 
         res = self.client.get('/api/users/1')
         self.assertEqual(res.status_code, 404)
+
+    def test_api_user_validate(self):
+        """ Test api validate user credentials """
+
+        user = {'username': 'TestAdmin', 'password': 'password'}
+        res = self.client.put('api/users/validate', json=user)
+        json_data = res.get_json()
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(json_data['result'], True)
+
+        user = {'username': 'TestAdmin', 'password': 'badpassword'}
+        res = self.client.put('api/users/validate', json=user)
+        json_data = res.get_json()
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(json_data['result'], False)
+
 
 if __name__ == "__main__":
     unittest.main()

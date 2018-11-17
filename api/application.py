@@ -304,6 +304,22 @@ def delete_user(user_id):
     netAdminToolDB.delete_user(user_id)
     return jsonify({'result': True})
 
+@app.route("/api/users/validate", methods=['PUT'])
+def validate_user():
+    netAdminToolDB = app.config['DATABASE']
+    input = request.get_json()
+
+    if input == None:
+        return jsonify({'error': 'Invalid PUT request, no data'}), 400
+    if not 'username' in input:
+        return jsonify({'error': 'Invalid PUT request, missing username'}), 400
+    if not 'password' in input:
+        return jsonify({'error': 'Invalid PUT request, missing password'}), 400
+
+    if netAdminToolDB.authenticate_user(input['username'], input['password']):
+        return jsonify({'result': True})
+
+    return jsonify({'result': False}), 404
 
 @app.errorhandler(400)
 def bad_request(error):

@@ -18,7 +18,7 @@ def main():
         reader = csv.reader(usersFile)
         for username, password, display_name, role_name in reader:
             db.add_user(username,password,display_name,role_name)
-        print(f'Imported user = {user}')
+        print(f'Imported user = {username}')
 
 if __name__ == '__main__':
     main()

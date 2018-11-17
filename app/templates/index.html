@@ -4,9 +4,19 @@
 {% block body %}
 <div class="container-fluid">
   <h4>Welcome</h4>
-
+  <!--
   <ul>
     <li><a href = "{{ url_for('devices') }}">Devices</a>
   </ul>
+  -->
+  {% if current_user.is_authenticated %}
+    Hi {{ current_user.display_name }} <br><br>
+    User Details:
+    <ul>
+      <li>Id : {{ current_user.id }}</li>
+      <li>Username : {{ current_user.username }}</li>
+      <li>Display Name : {{ current_user.display_name }}</li>
+      <li>Role : {{ current_user.role }}</li>
+  {% endif %}
 </div>
 {% endblock %}

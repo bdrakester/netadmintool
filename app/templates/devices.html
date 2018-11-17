@@ -65,8 +65,9 @@
     {% endif %}
   </table>
 
+  {% if current_user.is_authenticated and current_user.role == 'admin' %}
   <a href="{{ url_for('add_device') }}" class="btn btn-primary">Add a Device</a>
-
+  {% endif %}
 
 
 </div>
