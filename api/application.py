@@ -2,6 +2,7 @@
 
 from flask import Flask, jsonify, request, url_for
 from database import NetAdminToolDB
+from utils import get_from_device
 
 CONFIG_FILE = 'netadminapi.conf'
 TESTING_CONFIG_FILE = 'tests.conf'
@@ -102,7 +103,10 @@ def get_device(device_id):
 @app.route("/api/devices/<int:device_id>", methods=['PUT'])
 def update_device(device_id):
     """
-    Update device with id device_id
+    Update device with id device_id.
+    If JSON value = None for a supported key, connect to device to retrieve
+    updated value.
+    Supported keys for device update: sw_version
     """
     netAdminToolDB = app.config['DATABASE']
     device = netAdminToolDB.get_device(device_id)
@@ -113,6 +117,10 @@ def update_device(device_id):
 
     if input == None:
         return jsonify({'error': 'Invalid PUT request'}), 400
+
+    # Get update values from device for supported keys with value None
+    if 'sw_version' in input and input['sw_version'] == None:
+        input['sw_version'] = get_from_device(device, 'sw_version')
 
     # Send input directly to update_device function, which checks each key.
     netAdminToolDB.update_device(device_id, **input)

@@ -7,6 +7,7 @@ import unittest
 
 from database import NetAdminToolDB as DB
 from application import app
+from utils import CiscoASA, get_from_device
 
 # Contains test database connection information
 CONFIG_FILE = 'tests.conf'
@@ -159,10 +160,6 @@ class Tests(unittest.TestCase):
         res = self.db.authenticate_user('TestAdmin', 'badpassword')
         self.assertEqual(res,False)
 
-
-
-
-
     ### API Tests
     def test_api_devices(self):
         """ Test api get all devices """
@@ -290,6 +287,14 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(res.status_code, 404)
         self.assertEqual(json_data['result'], False)
+
+    # utils tests
+    def test_utils_cisco_asa_get_version(self):
+        """ Test CiscoASA get version """
+        device = self.db.get_device_name('TEST-firewall1')
+        res = get_from_device(device,'sw_version')
+        #res = CiscoASA.get_version()
+        self.assertEqual(res,'9.2')
 
 
 if __name__ == "__main__":
