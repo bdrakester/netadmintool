@@ -7,8 +7,15 @@ from configparser import ConfigParser
 from database import NetAdminToolDB
 #from flask import jsonify
 
-#db = NetAdminToolDB('netadminapi.conf')
-db = NetAdminToolDB('tests.conf')
+nadb = NetAdminToolDB('netadminapi.conf')
+#db = NetAdminToolDB('tests.conf')
+#dev = db.get_device(12)
+#db.create_tables()
+#db.add_device('TEST-firewall1', '2.2.2.2', 1,
+#    '9.8', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
+#    'NGFW', 'Notes for firewall1')
+#device = db.get_device()
+#db = NetAdminToolDB('tests.conf')
 #self.db.execute("SELECT id FROM users WHERE  username='adminuser' AND password='password2')
 config = ConfigParser()
 config.read("netadminapi.conf")

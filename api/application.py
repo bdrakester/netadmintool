@@ -2,7 +2,7 @@
 
 from flask import Flask, jsonify, request, url_for
 from database import NetAdminToolDB
-from utils import get_from_device
+from utils import get_version_from_device
 
 CONFIG_FILE = 'netadminapi.conf'
 TESTING_CONFIG_FILE = 'tests.conf'
@@ -37,8 +37,10 @@ def get_devices():
                                     'uri': uri,
                                     'name': device.name,
                                     'ip_addr': device.ip_addr,
+                                    'device_type_id': device.device_type_id,
                                     'make': device.make,
                                     'model': device.model,
+                                    'code': device.code,
                                     'sw_version': device.sw_version,
                                     'serial_number': device.serial_number,
                                     'datacenter': device.datacenter,
@@ -55,8 +57,10 @@ def get_devices():
                                 'uri': uri,
                                 'name': device.name,
                                 'ip_addr': device.ip_addr,
+                                'device_type_id': device.device_type_id,
                                 'make': device.make,
                                 'model': device.model,
+                                'code': device.code,
                                 'sw_version': device.sw_version,
                                 'serial_number': device.serial_number,
                                 'datacenter': device.datacenter,
@@ -88,8 +92,10 @@ def get_device(device_id):
                                 'uri': uri,
                                 'name': device.name,
                                 'ip_addr': device.ip_addr,
+                                'device_type_id': device.device_type_id,
                                 'make': device.make,
                                 'model': device.model,
+                                'code': device.code,
                                 'sw_version': device.sw_version,
                                 'serial_number': device.serial_number,
                                 'datacenter': device.datacenter,
@@ -145,10 +151,8 @@ def add_device():
         return jsonify({'error': 'Invalid POST request, missing name'}), 400
     if not 'ip_addr' in input:
         return jsonify({'error': 'Invalid POST request, missing ip_addr'}), 400
-    if not 'make' in input:
-        return jsonify({'error': 'Invalid POST request, missing make'}), 400
-    if not 'model' in input:
-        return jsonify({'error': 'Invalid POST request, missing model'}), 400
+    if not 'device_type_id' in input:
+        return jsonify({'error': 'Invalid POST request, missing device_type_id'}), 400
     if not 'sw_version' in input:
         return jsonify({'error': 'Invalid POST request, missing sw_version'}), 400
     if not 'serial_number' in input:
@@ -167,7 +171,7 @@ def add_device():
 
     netAdminToolDB = app.config['DATABASE']
     id = netAdminToolDB.add_device(input['name'], input['ip_addr'],
-        input['make'], input['model'], input['sw_version'],
+        input['device_type_id'], input['sw_version'],
         input['serial_number'], input['datacenter'], input['location'],
         input['console'], input['description'], input['notes'])
 

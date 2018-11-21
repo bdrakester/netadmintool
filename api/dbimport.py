@@ -7,9 +7,9 @@ def main():
     print('Net Admin Tool Database Import')
     file = open('devices.csv')
     reader = csv.reader(file)
-    for name, ip_addr, make, model, sw_version, serial, datacenter, \
+    for name, ip_addr, device_type_id, sw_version, serial, datacenter, \
         location, console, descr, notes in reader:
-        db.add_device(name, ip_addr, make, model, sw_version, serial,
+        db.add_device(name, ip_addr, device_type_id, sw_version, serial,
             datacenter, location, console, descr, notes)
         print(f'Imported name = {name}  ip_addr = {ip_addr}')
     file.close()

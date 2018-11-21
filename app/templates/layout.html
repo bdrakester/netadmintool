@@ -62,8 +62,8 @@
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body">
-            <form action="{{ url_for('login') }}" method="POST">
+          <form action="{{ url_for('login') }}" method="POST">
+            <div class="modal-body">
               <div class="form-group row required">
                 <label for="username" class="col-form-label col-md-2">Username</label>
                 <div class="col-md-4">
@@ -76,11 +76,12 @@
                   <input type="password" class="form-control" id="password" name="password" required>
                 </div>
               </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Login</button>
-          </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

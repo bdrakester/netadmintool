@@ -11,29 +11,32 @@ from requests.auth import HTTPBasicAuth
 
 urllib3.disable_warnings()
 
-def get_from_device(device, attribute):
-    """ Retrieves attribute from device """
-    if attribute == 'sw_version':
-        if device.model.startswith('ASA'):
-            return CiscoASA.get_version()
+def get_version_from_device(device):
+    """ Retrieves the sw_version  from device """
+    if device.model.startswith('ASA'):
+        return CiscoASA.get_version(device.ip_addr)
 
     return None
 
 class CiscoASA:
 
     @staticmethod
-    def get_version(device):
+    def get_version(hostname):
+        server = hostname
         api_path = 'api/monitoring/device/components/version'
-        requests.get(f'https://{server}/{api}',auth=HTTPBasicAuth('',''),
+        resp = requests.get(f'https://{server}/{api_path}',auth=HTTPBasicAuth('',''),
             verify=False)
-        return '9.2'
+        version = resp.json()['asaVersion']
+        return version
 
 
-server = '172.26.13.18'
-api = 'api/monitoring/device/components/version'
 
-resp = requests.get(f'https://{server}/{api}',auth=HTTPBasicAuth('',''),
-    verify=False)
+if __name__ == '__main__':
+    server = '10.20.1.2'
+    api = 'api/monitoring/device/components/version'
 
-print(f'status_code = {resp.status_code}')
-print(f'text = {resp.text}')
+    resp = requests.get(f'https://{server}/{api}',auth=HTTPBasicAuth('',''),
+        verify=False)
+
+    print(f'status_code = {resp.status_code}')
+    print(f'text = {resp.text}')

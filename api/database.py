@@ -25,21 +25,21 @@ class NetAdminToolDB:
         self.engine = create_engine(connString)
         self.db = scoped_session(sessionmaker(bind=self.engine))
 
-    def add_device(self, name, ip_addr, make, model,
+    def add_device(self, name, ip_addr, device_type_id,
         sw_version, serial_number, datacenter, location, console="",
         description="", notes=""):
         """
         Add a Device, returns the new device's id.
         """
         result = self.db.execute("INSERT INTO devices \
-                                (name, ip_addr, make, model, \
+                                (name, ip_addr, device_type_id, \
                                 sw_version, serial_number, datacenter, \
                                 location, console, description, notes) \
-                                VALUES (:name, :ip_addr, :make, \
-                                :model, :ver, :serial_num, :datacenter, \
+                                VALUES (:name, :ip_addr, :device_type_id, \
+                                :ver, :serial_num, :datacenter, \
                                 :loc, :con, :descr, :notes)  RETURNING id",
-                                {'name': name, 'ip_addr': ip_addr, 'make': make,
-                                'model': model, 'ver': sw_version,
+                                {'name': name, 'ip_addr': ip_addr,
+                                'device_type_id': device_type_id, 'ver': sw_version,
                                 'serial_num': serial_number,
                                 'datacenter': datacenter, 'loc': location,
                                 'con': console, 'descr': description,
@@ -56,10 +56,17 @@ class NetAdminToolDB:
         returns a list of dictionaries of all devices in database
         """
         if id != 0:
-            device = self.db.execute("SELECT * FROM devices WHERE id = :id",
-                                    {'id': id}).fetchone()
+            device = self.db.execute("SELECT * FROM devices \
+                JOIN device_types ON devices.device_type_id = device_types.id \
+                WHERE devices.id = :id", {'id': id}).fetchone()
+
+            #device = self.db.execute("SELECT * FROM devices WHERE id = :id",
+            #                        {'id': id}).fetchone()
         else:
-            device = self.db.execute("SELECT * FROM devices").fetchall()
+            #device = self.db.execute("SELECT * FROM devices").fetchall()
+            device = self.db.execute("SELECT * FROM devices \
+                JOIN device_types \
+                ON devices.device_type_id = device_types.id").fetchall()
 
         # Added Commit to avoid crash with error.
         # "QueuePool limit of size 5 overflow 10 reached, connection timed out,
@@ -73,8 +80,11 @@ class NetAdminToolDB:
         """
         Returns first device with name
         """
-        device = self.db.execute("SELECT * FROM devices WHERE name = :name",
-                            {'name': name }).fetchone()
+        #device = self.db.execute("SELECT * FROM devices WHERE name = :name",
+        #                    {'name': name }).fetchone()
+        device = self.db.execute("SELECT * FROM devices \
+            JOIN device_types ON devices.device_type_id = device_types.id \
+            WHERE devices.name = :name", {'name': name}).fetchone()
 
         # Add commit to avoid crash - see get_device(self,id=0) comments
         self.db.commit()
@@ -94,12 +104,8 @@ class NetAdminToolDB:
                 self.db.execute('UPDATE devices SET ip_addr = :value \
                                 WHERE id = :id',
                                 {'value': value, 'id':id})
-            if key == 'make':
-                self.db.execute('UPDATE devices SET make = :value \
-                                WHERE id = :id',
-                                {'value': value, 'id':id})
-            if key == 'model':
-                self.db.execute('UPDATE devices SET model = :value \
+            if key == 'device_type_id':
+                self.db.execute('UPDATE devices SET device_type_id = :value \
                                 WHERE id = :id',
                                 {'value': value, 'id':id})
             if key == 'sw_version':
@@ -144,20 +150,28 @@ class NetAdminToolDB:
 
     def create_tables(self):
         """
-        Recreate database tables
+        Recreate database tables. Adds default values below to the database,
+        Roles: admin, reaodnly
+        Device Types: Cisco ASA 5555-X, Cisco IOS, Cisco SG300
         """
 
+        self.db.execute('DROP TABLE IF EXISTS device_types CASCADE')
         self.db.execute('DROP TABLE IF EXISTS devices')
         self.db.execute('DROP TABLE IF EXISTS roles CASCADE')
         self.db.execute('DROP TABLE IF EXISTS users')
 
 
+        self.db.execute('CREATE TABLE device_types ( \
+          id SERIAL PRIMARY KEY, \
+          make VARCHAR NOT NULL, \
+          model VARCHAR NOT NULL, \
+          code VARCHAR NOT NULL UNIQUE)')
+
         self.db.execute('CREATE TABLE devices ( \
             id SERIAL PRIMARY KEY, \
             name VARCHAR NOT NULL, \
             ip_addr INET NOT NULL, \
-            make VARCHAR NOT NULL, \
-            model VARCHAR NOT NULL, \
+            device_type_id INTEGER REFERENCES device_types, \
             sw_version VARCHAR NOT NULL, \
             serial_number VARCHAR NOT NULL, \
             datacenter VARCHAR NOT NULL, \
@@ -179,6 +193,12 @@ class NetAdminToolDB:
 
         self.db.execute("INSERT INTO roles (role_name) VALUES ('admin')")
         self.db.execute("INSERT INTO roles (role_name) VALUES ('readonly')")
+        self.db.execute("INSERT INTO device_types(make, model, code) \
+            VALUES ('Cisco', 'ASA 5555-X', 'cisco_asa')")
+        self.db.execute("INSERT INTO device_types(make, model, code) \
+            VALUES ('Cisco', '2951', 'cisco_ios')")
+        self.db.execute("INSERT INTO device_types(make, model, code) \
+            VALUES ('Cisco', 'SG300', 'cisco_s300')")
 
         self.db.commit()
 
