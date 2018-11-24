@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 #####################################################################
-# utils.py
+# connectors.py
 #
 # Provides functions to collect information from network devices.
 #####################################################################
@@ -13,8 +13,15 @@ urllib3.disable_warnings()
 
 def get_version_from_device(device):
     """ Retrieves the sw_version  from device """
-    if device.model.startswith('ASA'):
+    if device.code == 'cisco_asa':
         return CiscoASA.get_version(device.ip_addr)
+
+    return None
+
+def get_serial_from_device(device):
+    """ Retrieves the serial number from device """
+    if device.code == 'cisco_asa':
+        return CiscoASA.get_serial(device.ip_addr)
 
     return None
 
@@ -27,8 +34,18 @@ class CiscoASA:
         resp = requests.get(f'https://{server}/{api_path}',auth=HTTPBasicAuth('',''),
             verify=False)
         version = resp.json()['asaVersion']
+        #print(f'CiscoASA.get_version resp = {resp.text}')
         return version
 
+    @staticmethod
+    def get_serial(hostname):
+        server = hostname
+        api_path = 'api/monitoring/serialnumber'
+        resp = requests.get(f'https://{server}/{api_path}',auth=HTTPBasicAuth('',''),
+            verify=False)
+        serial = resp.json()['serialNumber']
+        print(f'resp = {resp.text}')
+        return serial
 
 
 if __name__ == '__main__':

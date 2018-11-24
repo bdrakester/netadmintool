@@ -1,7 +1,10 @@
 {% extends "layout.html" %}
 
 {% block head %}
-<!--<script src="{{ url_for('static', filename='js/device.js') }}"></script>-->
+<script src="{{ url_for('static', filename='js/device.js') }}"></script>
+<script>
+  var device_types = {{ device_types|tojson }}
+</script>
 {% endblock %}
 
 {% block body %}
@@ -24,14 +27,13 @@
   </ul>
   {% if current_user.is_authenticated and current_user.role == 'admin' %}
     <form action="{{ url_for('device', device_id=device.id) }}" method="POST">
-      <div class="form-row">
+      <div class="form-row" id="updateRow">
         <div class="form-group col-md-4">
-          <label for="attribute">Choose ...</label>
-          <select id="attribute" class="form-control" name="attribute">
-            <option selected value="name">Name</option>
+          <select id="attribute" class="form-control" name="attribute" required>
+            <option value="" selected>--- Please choose---</option>
+            <option value="name">Name</option>
             <option value="ip_address">IP Address</option>
-            <option value="make">Make</option>
-            <option value="model">Model</option>
+            <option value="device_type_id">Device Type</option>
             <option value="sw_version">SW Version</option>
             <option value="serial_number">Serial Number</option>
             <option value="datacenter">Datacenter</option>
@@ -41,10 +43,10 @@
             <option value="notes">Notes</option>
           </select>
         </div>
-        <div class="form-group col-md-4">
-          <label for="new_value">New Value</label>
+        <!--<div class="form-group col-md-4">
           <input type="text" class="form-control" id="new_value" name="new_value">
         </div>
+        -->
       </div>
       <div class="form-row">
         <div class="form-group col-md-4">

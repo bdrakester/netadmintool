@@ -20,15 +20,16 @@
       </div>
     </div>
     <div class="form-group row required">
-      <label for="make" class="col-form-label col-md-2">Make</label>
+      <label for="make" class="col-form-label col-md-2">Type</label>
       <div class="col-md-4">
-        <input type="text" class="form-control" id="make" name="make" required>
-      </div>
-    </div>
-    <div class="form-group row required">
-      <label for="model" class="col-form-label col-md-2">Model</label>
-      <div class="col-md-4">
-        <input type="text" class="form-control" id="model" name="model" required>
+        <select class="form-control" id="device_type_id" name="device_type_id" required>
+          <option value="" selected>--- Please choose ---</option>
+          {% for device_type in device_types %}
+            <option value="{{ device_type.id }}">
+              {{ device_type.make }} {{ device_type.model }}
+            </option>
+          {% endfor %}
+        </select>
       </div>
     </div>
     <div class="form-group row required">

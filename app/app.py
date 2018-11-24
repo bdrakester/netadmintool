@@ -46,7 +46,7 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-    return 'Unauthorized - need to implement'
+    return render_template('error.html', message='Login required')
 
 @app.route('/')
 def index():
@@ -67,8 +67,18 @@ def devices():
 def device(device_id):
     resp = requests.get(f'{api}/devices/{device_id}')
     if resp.status_code == 200:
+        resp_types = requests.get(f'{api}/device_types')
+        device_types = resp_types.json()['device_types']
+        device_types_list = []
+        for device_type in device_types:
+            device_types_list.append({
+                                    'id': device_type['id'],
+                                    'make': device_type['make'],
+                                    'model': device_type['model']
+                                    })
         device = resp.json()['device']
-        return render_template('device.html', device = device)
+        return render_template('device.html', device = device,
+            device_types= device_types_list)
     else:
         return render_template('error.html', message = "Device not found.")
 
@@ -81,6 +91,13 @@ def update_device(device_id):
     if new_value != '':
         update = {attribute:new_value}
         resp = requests.put(f'{api}/devices/{device_id}', json=update)
+
+    # Else new value left empty, call API with JSON value set to None
+    # to update from the device
+    else:
+        if attribute == 'sw_version' or attribute == 'serial_number':
+            update = {attribute: None}
+            resp = requests.put(f'{api}/devices/{device_id}', json=update)
 
     return redirect(url_for('device', device_id = device_id))
 
@@ -106,7 +123,7 @@ def add_device():
         for attribute in request.form:
             new_device[attribute] = request.form.get(attribute)
 
-        resp = requests.post(f'{api}/devices', json=new_device)
+        resp = requests.post(f'{api}/devices', json = new_device)
         if resp.status_code == 400:
             error = resp.json()['error']
             return render_template('add.html', message = error)
@@ -115,7 +132,11 @@ def add_device():
             device = resp.json()['device']
             return redirect((url_for('devices', device_id = device['id'])))
 
-    return render_template('add.html')
+    resp = requests.get(f'{api}/device_types')
+    if resp.status_code == 200:
+        device_types = resp.json()['device_types']
+
+    return render_template('add.html', device_types = device_types)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -147,6 +168,12 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+@app.route('/admin')
+@login_required
+def admin():
+    return render_template('admin.html')
+
+
 ### BEGIN - Testing Flask-Login - REMOVE LATER
 from base64 import b64decode
 from itsdangerous import base64_decode
@@ -164,6 +191,8 @@ def protected():
     val = f'cookie = {cookie} <br><br> decoded = {json_decoded}'
 
     return json
+
+
 
 def decode(cookie):
     """Decode a Flask cookie."""

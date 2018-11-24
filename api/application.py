@@ -2,7 +2,7 @@
 
 from flask import Flask, jsonify, request, url_for
 from database import NetAdminToolDB
-from utils import get_version_from_device
+from connectors import get_version_from_device, get_serial_from_device
 
 CONFIG_FILE = 'netadminapi.conf'
 TESTING_CONFIG_FILE = 'tests.conf'
@@ -112,7 +112,7 @@ def update_device(device_id):
     Update device with id device_id.
     If JSON value = None for a supported key, connect to device to retrieve
     updated value.
-    Supported keys for device update: sw_version
+    Supported keys for device update: sw_version, serial_number
     """
     netAdminToolDB = app.config['DATABASE']
     device = netAdminToolDB.get_device(device_id)
@@ -126,7 +126,9 @@ def update_device(device_id):
 
     # Get update values from device for supported keys with value None
     if 'sw_version' in input and input['sw_version'] == None:
-        input['sw_version'] = get_from_device(device, 'sw_version')
+        input['sw_version'] = get_version_from_device(device)
+    if 'serial_number' in input and input['serial_number'] == None:
+        input['serial_number'] = get_serial_from_device(device)
 
     # Send input directly to update_device function, which checks each key.
     netAdminToolDB.update_device(device_id, **input)
@@ -332,6 +334,50 @@ def validate_user():
         return jsonify({'result': True})
 
     return jsonify({'result': False}), 404
+
+@app.route('/api/device_types', methods=['GET'])
+def get_device_types():
+    """
+    Return all device types.
+    """
+    netAdminToolDB = app.config['DATABASE']
+
+    device_types = netAdminToolDB.get_device_type()
+    list = []
+    for device_type in device_types:
+        uri = url_for('get_device_type', device_type_id=device_type.id, _external=True)
+        list.append({
+                    'id': device_type.id,
+                    'uri': uri,
+                    'make': device_type.make,
+                    'model': device_type.model,
+                    'code': device_type.code
+                    })
+    if list == []:
+        return jsonify({'error': 'No device types found'}), 404
+
+    return jsonify({'device_types': list})
+
+@app.route('/api/device_types/<int:device_type_id>', methods=['GET'])
+def get_device_type(device_type_id):
+    """
+    Return device_type with device_type_id.
+    """
+    netAdminToolDB = app.config['DATABASE']
+    device_type = netAdminToolDB.get_device_type(device_type_id)
+
+    if device_type == None:
+        return jsonify({'error': 'device_type_id not found'}), 404
+
+    return jsonify({'device_type':  {
+                                    'id': device_type.id,
+                                    'make': device_type.make,
+                                    'model': device_type.model,
+                                    'code': device_type.code
+                                    }
+
+
+                })
 
 @app.errorhandler(400)
 def bad_request(error):

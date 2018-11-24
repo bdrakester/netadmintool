@@ -52,21 +52,33 @@ class NetAdminToolDB:
 
     def get_device(self, id=0):
         """
-        Returns a dictionary of device with id. If id is not provided,
-        returns a list of dictionaries of all devices in database
+        Returns device with id. If id is not provided,
+        returns a list of all devices in the database.
         """
         if id != 0:
-            device = self.db.execute("SELECT * FROM devices \
+            device = self.db.execute("SELECT devices.id as id, name, ip_addr, \
+                device_type_id, sw_version, serial_number, datacenter, \
+                location, console, description, notes, make, model, code \
+                FROM devices \
                 JOIN device_types ON devices.device_type_id = device_types.id \
                 WHERE devices.id = :id", {'id': id}).fetchone()
+            #device = self.db.execute("SELECT * FROM devices \
+            #    JOIN device_types ON devices.device_type_id = device_types.id \
+            #    WHERE devices.id = :id", {'id': id}).fetchone()
 
             #device = self.db.execute("SELECT * FROM devices WHERE id = :id",
             #                        {'id': id}).fetchone()
         else:
             #device = self.db.execute("SELECT * FROM devices").fetchall()
-            device = self.db.execute("SELECT * FROM devices \
-                JOIN device_types \
-                ON devices.device_type_id = device_types.id").fetchall()
+            #device = self.db.execute("SELECT * FROM devices \
+            #    JOIN device_types \
+            #    ON devices.device_type_id = device_types.id").fetchall()
+            device = self.db.execute("SELECT devices.id as id, name, ip_addr, \
+                device_type_id, sw_version, serial_number, datacenter, \
+                location, console, description, notes, make, model, code \
+                FROM devices \
+                JOIN device_types ON devices.device_type_id = device_types.id",
+                {'id': id}).fetchall()
 
         # Added Commit to avoid crash with error.
         # "QueuePool limit of size 5 overflow 10 reached, connection timed out,
@@ -317,3 +329,41 @@ class NetAdminToolDB:
 
         else:
             return True
+
+    def add_device_type(self, make, model, code):
+        """
+        Add a device type to the database
+        """
+        return None
+
+    def get_device_type(self, id=0):
+        """
+        Returns device type with id.  If id is not provide, returns a list
+        of all device types in the database.
+        """
+        if id != 0:
+            device_type = self.db.execute("SELECT * FROM device_types \
+                WHERE device_types.id = :id", {'id': id}).fetchone()
+        else:
+            device_type = self.db.execute("SELECT * FROM device_types").fetchall()
+
+        self.db.commit()
+        return device_type
+
+    def get_device_type_make_model(self, make, model):
+        """
+        Returns device type with make and model.
+        """
+        return None
+
+    def update_device_type(self, id, **updates):
+        """
+        Update device type with id with named arguments
+        """
+        return None
+
+    def delete_device_type(self, id):
+        """
+        Delete device with id from database
+        """
+        return None
