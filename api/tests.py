@@ -7,7 +7,7 @@ import unittest
 
 from database import NetAdminToolDB as DB
 from application import app
-from utils import get_version_from_device
+#from utils import get_version_from_device
 
 # Contains test database connection information
 CONFIG_FILE = 'tests.conf'
