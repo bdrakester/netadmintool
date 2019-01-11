@@ -111,11 +111,12 @@ def update_device(device_id):
     """
     Update device with id device_id.
     If JSON value = None for a supported key, connect to device to retrieve
-    updated value.
+    updated value. Also requires keys device_username and device_password
     Supported keys for device update: sw_version, serial_number
     """
     netAdminToolDB = app.config['DATABASE']
     device = netAdminToolDB.get_device(device_id)
+    #print(f'update_device request = {request.get_data()}')
     if device == None:
         return jsonify({'error': 'Device_id not found'}), 404
 
@@ -126,9 +127,26 @@ def update_device(device_id):
 
     # Get update values from device for supported keys with value None
     if 'sw_version' in input and input['sw_version'] == None:
-        input['sw_version'] = get_version_from_device(device)
+        # If device credentials were provided
+        if 'device_username' and 'device_password' in input:
+            input['sw_version'] = get_version_from_device(device,
+                input['device_username'], input['device_password'])
+            if input['sw_version'] == None:
+                return jsonify({'error': 'Unable to retrieve sw_version from device.'}), 404
+        # Device credentials not provided, return error
+        else:
+            return jsonify({'error': 'Updates from device require credentials.'}), 400
+
     if 'serial_number' in input and input['serial_number'] == None:
-        input['serial_number'] = get_serial_from_device(device)
+        # If device credentials were provided
+        if 'device_username' and 'device_password' in input:
+            input['serial_number'] = get_serial_from_device(device,
+                input['device_username'], input['device_password'])
+            if input['serial_number'] == None:
+                return jsonify({'error': 'Unable to retrieve serial_number from device.'}), 404
+        # Device credentials not provided, return error
+        else:
+            return jsonify({'error': 'Updates from device require credentials.'}), 400
 
     # Send input directly to update_device function, which checks each key.
     netAdminToolDB.update_device(device_id, **input)

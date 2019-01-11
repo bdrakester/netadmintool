@@ -29,7 +29,7 @@ class Tests(unittest.TestCase):
         #print('DEBUG: tests.py - Running setUp ...')
         self.db.create_tables()
         self.db.add_device('TEST-firewall1', '192.168.101.240', 1,
-            '9.8', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
+            '9.7', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
             'NGFW', 'Notes for firewall1')
         self.db.add_device('TEST-switch1', '3.3.3.3', 3,
             '3.1.4', 'sn9876', 'Boston', 'Rack 2', 'Serial 3', 'Core switch',
@@ -294,7 +294,105 @@ class Tests(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(json_data['result'], False)
 
-    # Connectors tests
+    def test_api_update_version_from_cisco_asa(self):
+        """ Test api update software version from a Cisco ASA """
+        update = {'sw_version': None, 'device_username': self.asa_username,
+            'device_password': self.asa_password}
+
+        # Get the Device ID for TEST-firewall1
+        res = self.client.get('/api/devices?name=TEST-firewall1')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,200)
+        json_data = res.get_json()
+        self.assertEqual(json_data['device']['sw_version'],'9.8(1)')
+
+    def test_api_update_version_from_cisco_asa_no_creds(self):
+        """
+        Test api update software version from a Cisco ASA without credentials
+        """
+        update = {'sw_version': None}
+
+        # Get the Device ID for TEST-firewall1
+        res = self.client.get('/api/devices?name=TEST-firewall1')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,400)
+        json_data = res.get_json()
+        self.assertEqual(json_data['error'],'Updates from device require credentials.')
+
+    def test_api_update_version_from_cisco_asa_bad_creds(self):
+        """
+        Test api update software version from a Cisco ASA without credentials
+        """
+        update = {'sw_version': None, 'device_username': self.asa_username,
+            'device_password': 'bad password'}
+
+        # Get the Device ID for TEST-firewall1
+        res = self.client.get('/api/devices?name=TEST-firewall1')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,404)
+        json_data = res.get_json()
+        self.assertEqual(json_data['error'],'Unable to retrieve sw_version from device.')
+
+    def test_api_update_serial_from_cisco_asa(self):
+        """ Test api update serial number from a Cisco ASA """
+        update = {'serial_number': None, 'device_username': self.asa_username,
+            'device_password': self.asa_password}
+
+        # Get the Device ID for TEST-firewall1
+        res = self.client.get('/api/devices?name=TEST-firewall1')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,200)
+        json_data = res.get_json()
+        self.assertEqual(json_data['device']['serial_number'],'9APQD52LAJP')
+
+    def test_api_update_serial_from_cisco_asa_no_creds(self):
+        """
+        Test api update serial number from a Cisco ASA without credentials
+        """
+        update = {'serial_number': None}
+
+        # Get the Device ID for TEST-firewall1
+        res = self.client.get('/api/devices?name=TEST-firewall1')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,400)
+        json_data = res.get_json()
+        self.assertEqual(json_data['error'],'Updates from device require credentials.')
+
+    def test_api_update_serial_from_cisco_asa_bad_creds(self):
+        """
+        Test api update serial number from a Cisco ASA without credentials
+        """
+        update = {'serial_number': None, 'device_username': self.asa_username,
+            'device_password': 'bad password'}
+
+        # Get the Device ID for TEST-firewall1
+        res = self.client.get('/api/devices?name=TEST-firewall1')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,404)
+        json_data = res.get_json()
+        self.assertEqual(json_data['error'],'Unable to retrieve serial_number from device.')
+
+
+    # Connectors tests - tests functions that collect information from
+    # network devices.
     def test_connectors_cisco_asa_get_version(self):
         """ Test CiscoASA get version """
         device = self.db.get_device_name('TEST-firewall1')
@@ -308,6 +406,18 @@ class Tests(unittest.TestCase):
         res = get_serial_from_device(device, self.asa_username,
             self.asa_password)
         self.assertEqual(res,'9APQD52LAJP')
+
+    def test_connectors_cisco_asa_get_version_bad_creds(self):
+        """ Test Cisco ASA Get version with bad device credentials """
+        device = self.db.get_device_name('TEST-firewall1')
+        res = get_version_from_device(device, self.asa_username, 'badpass')
+        self.assertEqual(res,None)
+
+    def test_connectors_cisco_asa_get_serial_bad_creds(self):
+        """ Test Cisco ASA Get version with bad device credentials """
+        device = self.db.get_device_name('TEST-firewall1')
+        res = get_serial_from_device(device, self.asa_username, 'badpass')
+        self.assertEqual(res,None)
 
 
 if __name__ == "__main__":
