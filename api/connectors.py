@@ -12,14 +12,20 @@ from requests.auth import HTTPBasicAuth
 urllib3.disable_warnings()
 
 def get_version_from_device(device,username,password):
-    """ Retrieves the software version (sw_version) from device """
+    """
+    Retrieves the software version (sw_version) from device, returns None
+    there as an error.
+    """
     if device.code == 'cisco_asa':
         return CiscoASA.get_version(device.ip_addr,username,password)
 
     return None
 
 def get_serial_from_device(device, username, password):
-    """ Retrieves the serial number from device """
+    """
+    Retrieves the serial number from device, returns None if there was
+    an error.
+    """
     if device.code == 'cisco_asa':
         return CiscoASA.get_serial(device.ip_addr, username, password)
 
@@ -29,6 +35,7 @@ class CiscoASA:
 
     @staticmethod
     def get_version(hostname, username, password):
+        """ Retrieve software version from device, returns None if error """
         server = hostname
         api_path = 'api/monitoring/device/components/version'
         resp = requests.get(f'https://{server}/{api_path}',
@@ -37,10 +44,11 @@ class CiscoASA:
         if resp.status_code == 200:
             return resp.json()['asaVersion']
 
-        return 'Error'
+        return None
 
     @staticmethod
     def get_serial(hostname, username, password):
+        """ Retrieve serial number from device, returns None if error """
         server = hostname
         api_path = 'api/monitoring/serialnumber'
         resp = requests.get(f'https://{server}/{api_path}',
@@ -49,7 +57,7 @@ class CiscoASA:
         if resp.status_code == 200:
             return resp.json()['serialNumber']
 
-        return 'Error'
+        return None
 
 
 if __name__ == '__main__':
