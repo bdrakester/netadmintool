@@ -11,41 +11,45 @@ from requests.auth import HTTPBasicAuth
 
 urllib3.disable_warnings()
 
-def get_version_from_device(device):
-    """ Retrieves the sw_version  from device """
+def get_version_from_device(device,username,password):
+    """ Retrieves the software version (sw_version) from device """
     if device.code == 'cisco_asa':
-        return CiscoASA.get_version(device.ip_addr)
+        return CiscoASA.get_version(device.ip_addr,username,password)
 
     return None
 
-def get_serial_from_device(device):
+def get_serial_from_device(device, username, password):
     """ Retrieves the serial number from device """
     if device.code == 'cisco_asa':
-        return CiscoASA.get_serial(device.ip_addr)
+        return CiscoASA.get_serial(device.ip_addr, username, password)
 
     return None
 
 class CiscoASA:
 
     @staticmethod
-    def get_version(hostname):
+    def get_version(hostname, username, password):
         server = hostname
         api_path = 'api/monitoring/device/components/version'
-        resp = requests.get(f'https://{server}/{api_path}',auth=HTTPBasicAuth('',''),
-            verify=False)
-        version = resp.json()['asaVersion']
-        #print(f'CiscoASA.get_version resp = {resp.text}')
-        return version
+        resp = requests.get(f'https://{server}/{api_path}',
+            auth=HTTPBasicAuth(username,password), verify=False)
+
+        if resp.status_code == 200:
+            return resp.json()['asaVersion']
+
+        return 'Error'
 
     @staticmethod
-    def get_serial(hostname):
+    def get_serial(hostname, username, password):
         server = hostname
         api_path = 'api/monitoring/serialnumber'
-        resp = requests.get(f'https://{server}/{api_path}',auth=HTTPBasicAuth('',''),
-            verify=False)
-        serial = resp.json()['serialNumber']
-        print(f'resp = {resp.text}')
-        return serial
+        resp = requests.get(f'https://{server}/{api_path}',
+            auth=HTTPBasicAuth(username,password), verify=False)
+
+        if resp.status_code == 200:
+            return resp.json()['serialNumber']
+
+        return 'Error'
 
 
 if __name__ == '__main__':

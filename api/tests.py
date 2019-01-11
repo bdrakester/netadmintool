@@ -4,10 +4,11 @@
 
 import os
 import unittest
+from configparser import ConfigParser
 
 from database import NetAdminToolDB as DB
 from application import app
-#from utils import get_version_from_device
+from connectors import get_version_from_device, get_serial_from_device
 
 # Contains test database connection information
 CONFIG_FILE = 'tests.conf'
@@ -18,16 +19,22 @@ class Tests(unittest.TestCase):
     def setUpClass(self):
         #print('DEBUG: test.py Running setUpClass ...')
         self.db = DB(CONFIG_FILE)
+        config = ConfigParser()
+        config.read(CONFIG_FILE)
+        # Import credentials for tests that connect to Cisco ASA API
+        self.asa_username = config['CREDENTIALS']['asa_username']
+        self.asa_password = config['CREDENTIALS']['asa_password']
 
     def setUp(self):
         #print('DEBUG: tests.py - Running setUp ...')
         self.db.create_tables()
-        self.db.add_device('TEST-firewall1', '2.2.2.2', 1,
+        self.db.add_device('TEST-firewall1', '192.168.101.240', 1,
             '9.8', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
             'NGFW', 'Notes for firewall1')
         self.db.add_device('TEST-switch1', '3.3.3.3', 3,
             '3.1.4', 'sn9876', 'Boston', 'Rack 2', 'Serial 3', 'Core switch',
             'Notes for switch1')
+
         self.db.add_user('TestAdmin','password','TestAdmin Display','admin')
 
         app.config['DATABASE'] = DB(CONFIG_FILE)
@@ -287,13 +294,20 @@ class Tests(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(json_data['result'], False)
 
-    # utils tests
-    #def test_utils_cisco_asa_get_version(self):
-        #""" Test CiscoASA get version """
-        #device = self.db.get_device_name('TEST-firewall1')
-        #res = get_version_from_device(device)
-        #res = CiscoASA.get_version()
-        #self.assertEqual(res,'9.2')
+    # Connectors tests
+    def test_connectors_cisco_asa_get_version(self):
+        """ Test CiscoASA get version """
+        device = self.db.get_device_name('TEST-firewall1')
+        res = get_version_from_device(device, self.asa_username,
+            self.asa_password)
+        self.assertEqual(res,'9.8(1)')
+
+    def test_connectors_cisco_asa_get_serial(self):
+        """ Test CiscoASA get serial  """
+        device = self.db.get_device_name('TEST-firewall1')
+        res = get_serial_from_device(device, self.asa_username,
+            self.asa_password)
+        self.assertEqual(res,'9APQD52LAJP')
 
 
 if __name__ == "__main__":
