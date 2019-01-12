@@ -84,6 +84,7 @@ def device(device_id):
 
 @app.route('/devices/<int:device_id>', methods=['POST'])
 def update_device(device_id):
+    """ Update a device attribute """
     attribute = request.form.get('attribute')
     new_value = request.form.get('new_value')
 
@@ -96,7 +97,10 @@ def update_device(device_id):
     # to update from the device
     else:
         if attribute == 'sw_version' or attribute == 'serial_number':
-            update = {attribute: None}
+            device_username = request.form.get('device_username')
+            device_password = request.form.get('device_password')
+            update = {attribute: None, 'device_username': device_username,
+                'device_password':device_password}
             resp = requests.put(f'{api}/devices/{device_id}', json=update)
 
     return redirect(url_for('device', device_id = device_id))

@@ -26,7 +26,7 @@
     <li><strong>Notes:</strong> {{ device.notes }}</li>
   </ul>
   {% if current_user.is_authenticated and current_user.role == 'admin' %}
-    <form action="{{ url_for('device', device_id=device.id) }}" method="POST">
+    <form action="{{ url_for('device', device_id=device.id) }}" method="POST" onsubmit="Update()" >
       <div class="form-row" id="updateRow">
         <div class="form-group col-md-4">
           <select id="attribute" class="form-control" name="attribute" required>
@@ -48,10 +48,11 @@
         </div>
         -->
       </div>
-      <div class="form-row">
-        <div class="form-group col-md-4">
+      <div class="form-row" id="updateButtonRow">
+        <div class="form-group col-md-4" id="updateButtonCol">
           <button type="submit" class="btn btn-primary" id="update_button">Update</button>
         </div>
+
       </div>
     </form>
 
@@ -79,6 +80,42 @@
             <!--<button type="button" class="btn btn-primary">Yes, Delete Device</button>-->
             <a href="{{ url_for('delete_device',device_id=device.id) }}" class="btn btn-primary">Yes, Delete Device</a>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device Credentials Modal -->
+    <div class="modal fade" id="deviceCredentialsModal" tabindex="-1" role="dialog" aria-labelledby="deviceCredentialsModalLabel" aria-hidden="false">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmDeleteModalLabel">Please enter Device Credentials</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form action="{{ url_for('device', device_id=device.id) }}" method="POST">
+            <div class="modal-body">
+              <input type="hidden" id="deviceCredentialsModalAttribute" name="attribute">
+              <input type="hidden" name="new_value" value ="">
+              <div class="form-group row required">
+                <label for="username" class="col-form-label col-md-2">Username</label>
+                <div class="col-md-4">
+                  <input type="text" class="form-control" id="device_username" name="device_username" required>
+                </div>
+              </div>
+              <div class="form-group row required">
+                <label for="password" class="col-form-label col-md-2">Password</label>
+                <div class="col-md-4">
+                  <input type="password" class="form-control" id="device_password" name="device_password" required>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="modal_update_button">Update</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
