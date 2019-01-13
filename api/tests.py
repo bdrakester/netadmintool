@@ -21,14 +21,18 @@ class Tests(unittest.TestCase):
         self.db = DB(CONFIG_FILE)
         config = ConfigParser()
         config.read(CONFIG_FILE)
-        # Import credentials for tests that connect to Cisco ASA API
-        self.asa_username = config['CREDENTIALS']['asa_username']
-        self.asa_password = config['CREDENTIALS']['asa_password']
+        # Import attributes for tests that connect to Cisco ASA API
+        # For future, should mock this api 
+        self.asa_username = config['ASA']['username']
+        self.asa_password = config['ASA']['password']
+        self.asa_ip = config['ASA']['ip']
+        self.asa_version = config['ASA']['version']
+        self.asa_serial = config['ASA']['serial']
 
     def setUp(self):
         #print('DEBUG: tests.py - Running setUp ...')
         self.db.create_tables()
-        self.db.add_device('TEST-firewall1', '192.168.101.240', 1,
+        self.db.add_device('TEST-firewall1', self.asa_ip, 1,
             '9.7', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
             'NGFW', 'Notes for firewall1')
         self.db.add_device('TEST-switch1', '3.3.3.3', 3,
@@ -307,7 +311,7 @@ class Tests(unittest.TestCase):
         res = self.client.put(f'/api/devices/{id}', json=update)
         self.assertEqual(res.status_code,200)
         json_data = res.get_json()
-        self.assertEqual(json_data['device']['sw_version'],'9.8(1)')
+        self.assertEqual(json_data['device']['sw_version'],self.asa_version)
 
     def test_api_update_version_from_cisco_asa_no_creds(self):
         """
@@ -355,7 +359,7 @@ class Tests(unittest.TestCase):
         res = self.client.put(f'/api/devices/{id}', json=update)
         self.assertEqual(res.status_code,200)
         json_data = res.get_json()
-        self.assertEqual(json_data['device']['serial_number'],'9APQD52LAJP')
+        self.assertEqual(json_data['device']['serial_number'],self.asa_serial)
 
     def test_api_update_serial_from_cisco_asa_no_creds(self):
         """
@@ -398,14 +402,14 @@ class Tests(unittest.TestCase):
         device = self.db.get_device_name('TEST-firewall1')
         res = get_version_from_device(device, self.asa_username,
             self.asa_password)
-        self.assertEqual(res,'9.8(1)')
+        self.assertEqual(res,self.asa_version)
 
     def test_connectors_cisco_asa_get_serial(self):
         """ Test CiscoASA get serial  """
         device = self.db.get_device_name('TEST-firewall1')
         res = get_serial_from_device(device, self.asa_username,
             self.asa_password)
-        self.assertEqual(res,'9APQD52LAJP')
+        self.assertEqual(res,self.asa_serial)
 
     def test_connectors_cisco_asa_get_version_bad_creds(self):
         """ Test Cisco ASA Get version with bad device credentials """
