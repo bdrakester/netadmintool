@@ -1,5 +1,40 @@
+
+https://regexone.com/references/python
+
+
 Cisco ASA Rest API documentation:
 https://www.cisco.com/c/en/us/td/docs/security/asa/api/qsg-asa-api.html
 
 For RESTClient use null for None in json request
 Example: {"sw_version": null}
+
+ISR Router :
+#show version
+Cisco IOS Software, C2951 Software (C2951-UNIVERSALK9-M), Version 15.4(3)M9, REL                                                      EASE SOFTWARE (fc1)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2018 by Cisco Systems, Inc.
+Compiled Tue 30-Jan-18 03:57 by prod_rel_team
+
+ROM: System Bootstrap, Version 15.0(1r)M13, RELEASE SOFTWARE (fc1)
+
+...
+
+Cisco CISCO2951/K9 (revision 1.0) with 481280K/43008K bytes of memory.
+Processor board ID FTX1545AK2A  <<==== Serial Number
+...
+
+CSR1000v :
+#show version
+Cisco IOS XE Software, Version 03.14.01.S - Standard Support Release
+Cisco IOS Software, CSR1000V Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 15.5(1)S1, RELEASE SOFTWARE (fc1)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2015 by Cisco Systems, Inc.
+Compiled Sun 01-Mar-15 03:58 by mcpre
+ ...
+
+ cisco CSR1000V (VXE) processor (revision VXE) with 2150270K/6147K bytes of memory.
+Processor board ID 9M7G8W2BSKA  <<==== Serial Number
+3 Gigabit Ethernet interfaces
+32768K bytes of non-volatile configuration memory.
+3987232K bytes of physical memory.
+7774207K bytes of virtual hard disk at bootfl

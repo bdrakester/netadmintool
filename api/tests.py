@@ -21,19 +21,27 @@ class Tests(unittest.TestCase):
         self.db = DB(CONFIG_FILE)
         config = ConfigParser()
         config.read(CONFIG_FILE)
-        # Import credentials for tests that connect to Cisco ASA API
+        # Import credentials and ip addresses for connectors tests
         self.asa_username = config['CREDENTIALS']['asa_username']
         self.asa_password = config['CREDENTIALS']['asa_password']
+        self.ios_username = config['CREDENTIALS']['ios_username']
+        self.ios_password = config['CREDENTIALS']['ios_password']
+        self.asa_ip = config['DEVICES']['asa_ip']
+        self.ios_ip = config['DEVICES']['ios_ip']
+
 
     def setUp(self):
         #print('DEBUG: tests.py - Running setUp ...')
         self.db.create_tables()
-        self.db.add_device('TEST-firewall1', '192.168.101.240', 1,
+        self.db.add_device('TEST-firewall1', self.asa_ip, 1,
             '9.7', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
             'NGFW', 'Notes for firewall1')
         self.db.add_device('TEST-switch1', '3.3.3.3', 3,
             '3.1.4', 'sn9876', 'Boston', 'Rack 2', 'Serial 3', 'Core switch',
             'Notes for switch1')
+        self.db.add_device('TEST-Router2', self.ios_ip, 2,
+            '12.1', 'sn456', 'Boston', 'Rack 2', 'Serial 4', 'Core Router',
+            'Notes for Router2')
 
         self.db.add_user('TestAdmin','password','TestAdmin Display','admin')
 
@@ -61,7 +69,7 @@ class Tests(unittest.TestCase):
         #print('Running test_get_device_no_args ... ')
         res = self.db.get_device()
 
-        self.assertEqual(len(res),2)
+        self.assertEqual(len(res),3)
 
     def test_get_device(self):
         """ Test get_device with id argument """
@@ -175,7 +183,7 @@ class Tests(unittest.TestCase):
         res = self.client.get('/api/devices')
         json_data = res.get_json()
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(json_data['devices']),2)
+        self.assertEqual(len(json_data['devices']),3)
 
     def test_api_get_device(self):
         """ Test api get device id 1 """
@@ -327,7 +335,7 @@ class Tests(unittest.TestCase):
 
     def test_api_update_version_from_cisco_asa_bad_creds(self):
         """
-        Test api update software version from a Cisco ASA without credentials
+        Test api update software version from a Cisco ASA with bad credentials
         """
         update = {'sw_version': None, 'device_username': self.asa_username,
             'device_password': 'bad password'}
@@ -390,6 +398,49 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Unable to retrieve serial_number from device.')
 
+    def test_api_update_version_from_cisco_ios(self):
+        """ Test api update software version from a Cisco IOS """
+        update = {'sw_version': None, 'device_username': self.ios_username,
+            'device_password': self.ios_password}
+
+        # Get the Device ID for TEST-Router2
+        res = self.client.get('/api/devices?name=TEST-Router2')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,200)
+        json_data = res.get_json()
+        self.assertEqual(json_data['device']['sw_version'],'15.5(1)S1')
+
+    def test_api_update_version_from_cisco_ios_no_creds(self):
+        """
+        Test api update software version from a Cisco IOS without credentials
+        """
+        self.assertEqual(True,True)
+
+    def test_api_update_version_from_cisco_ios_bad_creds(self):
+        """
+        Test api update software version from a Cisco IOS without credentials
+        """
+        self.assertEqual(True,True)
+
+    def test_api_update_serial_from_cisco_ios(self):
+        """ Test api update serial number from a Cisco IOS """
+        self.assertEqual(True,True)
+
+    def test_api_update_serial_from_cisco_ios_no_creds(self):
+        """
+        Test api update serial number from a Cisco IOS without credentials
+        """
+        self.assertEqual(True,True)
+
+    def test_api_update_serial_from_cisco_ios_bad_creds(self):
+        """
+        Test api update serial number from a Cisco IOS without credentials
+        """
+        self.assertEqual(True,True)
+
 
     # Connectors tests - tests functions that collect information from
     # network devices.
@@ -414,10 +465,37 @@ class Tests(unittest.TestCase):
         self.assertEqual(res,None)
 
     def test_connectors_cisco_asa_get_serial_bad_creds(self):
-        """ Test Cisco ASA Get version with bad device credentials """
+        """ Test Cisco ASA Get serial with bad device credentials """
         device = self.db.get_device_name('TEST-firewall1')
         res = get_serial_from_device(device, self.asa_username, 'badpass')
         self.assertEqual(res,None)
+
+    def test_connectors_cisco_ios_get_version(self):
+        """ Test CiscoIOS get version """
+        device = self.db.get_device_name('TEST-Router2')
+        res = get_version_from_device(device, self.ios_username,
+            self.ios_password)
+        self.assertEqual(res,'15.5(1)S1')
+
+    def test_connectors_cisco_ios_get_serial(self):
+        """ Test CiscoIOS get serial  """
+        device = self.db.get_device_name('TEST-Router2')
+        res = get_serial_from_device(device, self.ios_username,
+            self.ios_password)
+        self.assertEqual(res,'9M7G8W2BSKA')
+
+    def test_connectors_cisco_ios_get_version_bad_creds(self):
+        """ Test Cisco IOS get version with bad device credentials """
+        device = self.db.get_device_name('TEST-Router2')
+        res = get_version_from_device(device, self.ios_username, 'badpass')
+        self.assertEqual(res,None)
+
+    def test_connectors_cisco_ios_get_serial_bad_creds(self):
+        """ Test Cisco IOS get serial with bad device credentials """
+        device = self.db.get_device_name('TEST-Router2')
+        res = get_serial_from_device(device, self.ios_username, 'badpass')
+        self.assertEqual(res,None)
+
 
 
 if __name__ == "__main__":
