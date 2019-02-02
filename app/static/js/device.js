@@ -28,15 +28,45 @@ function textInput() {
   return newValue;
 };
 
-function textInputDeviceUpdate() {
-  const newValue = document.createElement('input');
-  newValue.className = 'form-control';
-  newValue.id = 'new_value';
-  newValue.name = 'new_value';
-  newValue.placeholder = 'Leave empty to update from device ...';
-  //newValue.oninput = manualUpdate;
-  return newValue;
-}
+function updateTextInput(checkbox) {
+  if (checkbox.checked) {
+    textInput = document.querySelector('#new_value');
+    textInput.setAttribute('readonly', 'readonly');
+    textInput.value = '';
+    update = updateButtonDeviceUpdate();
+  }
+  else {
+    document.querySelector('#new_value').removeAttribute('readonly', 'readonly');
+    update = updateButton();
+  }
+
+  const currUpdate = document.querySelector('#update_button');
+  const updateButtonCol = document.querySelector('#updateButtonCol');
+  updateButtonCol.removeChild(currUpdate);
+  updateButtonCol.appendChild(update);
+};
+
+function queryDeviceCheckCol() {
+  const newCheckboxCol = document.createElement('div');
+  newCheckboxCol.className = 'form-group form-check-inline';
+  newCheckboxCol.id = 'checkboxCol';
+
+  const newCheck = document.createElement('input');
+  newCheck.className = "form-check-input";
+  newCheck.type = 'checkbox';
+  newCheck.id = 'queryDeviceCheckbox';
+  newCheck.onchange = function() { updateTextInput(this); };
+
+  const newLabel = document.createElement('label');
+  newLabel.className = 'form-check-label';
+  newLabel.for = 'queryDeviceCheckbox';
+  newLabel.innerHTML = 'Query Device';
+
+  newCheckboxCol.appendChild(newCheck);
+  newCheckboxCol.appendChild(newLabel);
+
+  return newCheckboxCol;
+};
 
 function updateButton() {
   const newButton = document.createElement('button');
@@ -45,7 +75,7 @@ function updateButton() {
   newButton.type = 'submit';
   newButton.innerHTML = 'Update';
   return newButton;
-}
+};
 
 function updateButtonDeviceUpdate() {
   const newButton = document.createElement('button');
@@ -56,22 +86,7 @@ function updateButtonDeviceUpdate() {
   newButton.dataset.toggle="modal";
   newButton.dataset.target="#deviceCredentialsModal";
   return newButton;
-}
-
-function Update() {
-  const attribute = document.querySelector('#attribute').value;
-  console.log('Inside Update...');
-  if (attribute == 'sw_version' || attribute == 'serial_number'){
-    const new_value = document.querySelector('#new_value').value;
-    console.log('If sw_version or serial_number...');
-    if (new_value == ''){
-      modal = document.querySelector('#deviceCredentialsModal');
-      modal.modal("toggle");
-      console.log(modal.id);
-      //$("#myModal").modal()
-    }
-  }
-}
+};
 
 function addInputCol() {
   const inputCol = document.createElement('div');
@@ -82,59 +97,52 @@ function addInputCol() {
 
   if (attribute == 'device_type_id') {
     input = deviceTypeSelector();
-    //update = updateButton();
-  }
-  else if(attribute == 'sw_version') {
-    input = textInputDeviceUpdate();
-    //update = updateButtonDeviceUpdate();
-  }
-  else if(attribute == 'serial_number') {
-    input = textInputDeviceUpdate();
-    //update = updateButtonDeviceUpdate();
   }
   else {
     input = textInput();
-    //update = updateButton();
   }
 
   inputCol.appendChild(input);
-  document.querySelector('#updateRow').appendChild(inputCol);
+
+  const updateRow = document.querySelector('#updateRow');
+  updateRow.appendChild(inputCol);
+
+  if (attribute == 'sw_version' || attribute == 'serial_number') {
+    const checkBoxCol = queryDeviceCheckCol();
+    updateRow.appendChild(checkBoxCol);
+  }
+
   document.querySelector('#attribute').onchange = updateInputCol;
-
-  //document.querySelector('#updateButtonCol').appendChild(update);
-
   document.querySelector('#deviceCredentialsModalAttribute').value = attribute;
 };
+
 
 function updateInputCol() {
   const attribute = document.querySelector('#attribute').value;
 
   if (attribute == 'device_type_id') {
     input = deviceTypeSelector();
-    //update = updateButton();
-  }
-  else if(attribute == 'sw_version') {
-    input = textInputDeviceUpdate();
-    //update = updateButtonDeviceUpdate();
-  }
-  else if(attribute == 'serial_number') {
-    input = textInputDeviceUpdate();
-    //update = updateButtonDeviceUpdate();
   }
   else {
     input = textInput();
-    //update = updateButton();
   }
 
-  const currInput = document.querySelector('#new_value');
   const inputCol = document.querySelector('#inputCol');
+  const currInput = document.querySelector('#new_value');
   inputCol.removeChild(currInput);
   inputCol.appendChild(input);
 
-  //const currUpdate = document.querySelector('#update_button');
-  //const updateButtonCol = document.querySelector('#updateButtonCol');
-  //updateButtonCol.removeChild(currUpdate);
-  //updateButtonCol.appendChild(update);
+  const updateRow = document.querySelector('#updateRow');
+
+  const oldCheckboxCol = document.querySelector('#checkboxCol');
+  if (oldCheckboxCol != null){
+    updateRow.removeChild(checkboxCol);
+  }
+
+  if (attribute == 'sw_version' || attribute == 'serial_number') {
+    const checkBoxCol = queryDeviceCheckCol();
+    updateRow.appendChild(checkBoxCol);
+  }
 
   document.querySelector('#deviceCredentialsModalAttribute').value = attribute;
 };
