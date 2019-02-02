@@ -84,7 +84,10 @@ class CiscoIOS:
         try:
             connection = netmiko.ConnectHandler(**device)
             output = connection.send_command('show version')
-            match = re.search(r'Version (\d+\.\d+\(\d+\)\w+)', output)
+            #match = re.search(r'Version (\d+\.\d+\(\d+\)\w+)', output)
+            # When testing on 7200 - version number had number and character
+            # in between () and nothing after ()
+            match = re.search(r'Version (\d+\.\d+\(\w+\)\w*)', output)
             connection.disconnect()
             return match.group(1)
         except:

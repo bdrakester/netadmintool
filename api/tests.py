@@ -423,30 +423,82 @@ class Tests(unittest.TestCase):
         """
         Test api update software version from a Cisco IOS without credentials
         """
-        self.assertEqual(True,True)
+        update = {'sw_version': None}
+
+        # Get the Device ID for TEST-Router2
+        res = self.client.get('/api/devices?name=TEST-Router2')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,400)
+        json_data = res.get_json()
+        self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
     def test_api_update_version_from_cisco_ios_bad_creds(self):
         """
         Test api update software version from a Cisco IOS without credentials
         """
-        self.assertEqual(True,True)
+        update = {'sw_version': None, 'device_username': self.ios_username,
+            'device_password': 'bad password'}
+
+        # Get the Device ID for TEST-Router2
+        res = self.client.get('/api/devices?name=TEST-Router2')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,404)
+        json_data = res.get_json()
+        self.assertEqual(json_data['error'],'Unable to retrieve sw_version from device.')
 
     def test_api_update_serial_from_cisco_ios(self):
         """ Test api update serial number from a Cisco IOS """
-        self.assertEqual(True,True)
+        update = {'serial_number': None, 'device_username': self.ios_username,
+            'device_password': self.ios_password}
+
+        # Get the Device ID for TEST-Router2
+        res = self.client.get('/api/devices?name=TEST-Router2')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,200)
+        json_data = res.get_json()
+        self.assertEqual(json_data['device']['serial_number'],self.ios_serial)
 
     def test_api_update_serial_from_cisco_ios_no_creds(self):
         """
         Test api update serial number from a Cisco IOS without credentials
         """
-        self.assertEqual(True,True)
+        update = {'serial_number': None}
+
+        # Get the Device ID for TEST-Router2
+        res = self.client.get('/api/devices?name=TEST-Router2')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,400)
+        json_data = res.get_json()
+        self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
     def test_api_update_serial_from_cisco_ios_bad_creds(self):
         """
         Test api update serial number from a Cisco IOS without credentials
         """
-        self.assertEqual(True,True)
+        update = {'serial_number': None, 'device_username': self.ios_username,
+            'device_password': 'bad password'}
 
+        # Get the Device ID for TEST-Router2
+        res = self.client.get('/api/devices?name=TEST-Router2')
+        id = res.get_json()['devices'][0]['id']
+
+        # Send update request
+        res = self.client.put(f'/api/devices/{id}', json=update)
+        self.assertEqual(res.status_code,404)
+        json_data = res.get_json()
+        self.assertEqual(json_data['error'],'Unable to retrieve serial_number from device.')
 
     # Connectors tests - tests functions that collect information from
     # network devices.
