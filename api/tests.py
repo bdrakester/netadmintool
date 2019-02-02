@@ -21,24 +21,20 @@ class Tests(unittest.TestCase):
         self.db = DB(CONFIG_FILE)
         config = ConfigParser()
         config.read(CONFIG_FILE)
-<<<<<<< HEAD
-        # Import credentials and ip addresses for connectors tests
-        self.asa_username = config['CREDENTIALS']['asa_username']
-        self.asa_password = config['CREDENTIALS']['asa_password']
-        self.ios_username = config['CREDENTIALS']['ios_username']
-        self.ios_password = config['CREDENTIALS']['ios_password']
-        self.asa_ip = config['DEVICES']['asa_ip']
-        self.ios_ip = config['DEVICES']['ios_ip']
 
-=======
-        # Import attributes for tests that connect to Cisco ASA API
-        # For future, should mock this api 
+        # Import credentials and ip addresses for connectors tests
+        # For future, should mock this api
         self.asa_username = config['ASA']['username']
         self.asa_password = config['ASA']['password']
         self.asa_ip = config['ASA']['ip']
         self.asa_version = config['ASA']['version']
         self.asa_serial = config['ASA']['serial']
->>>>>>> c90370124e9cc45ad0a566274d513e8442823be5
+        self.ios_ip = config['IOS']['ip']
+        self.ios_username = config['IOS']['username']
+        self.ios_password = config['IOS']['password']
+        self.ios_version = config['IOS']['version']
+        self.ios_serial = config['IOS']['serial']
+
 
     def setUp(self):
         #print('DEBUG: tests.py - Running setUp ...')
@@ -421,7 +417,7 @@ class Tests(unittest.TestCase):
         res = self.client.put(f'/api/devices/{id}', json=update)
         self.assertEqual(res.status_code,200)
         json_data = res.get_json()
-        self.assertEqual(json_data['device']['sw_version'],'15.5(1)S1')
+        self.assertEqual(json_data['device']['sw_version'],self.ios_version)
 
     def test_api_update_version_from_cisco_ios_no_creds(self):
         """
@@ -485,14 +481,14 @@ class Tests(unittest.TestCase):
         device = self.db.get_device_name('TEST-Router2')
         res = get_version_from_device(device, self.ios_username,
             self.ios_password)
-        self.assertEqual(res,'15.5(1)S1')
+        self.assertEqual(res,self.ios_version)
 
     def test_connectors_cisco_ios_get_serial(self):
         """ Test CiscoIOS get serial  """
         device = self.db.get_device_name('TEST-Router2')
         res = get_serial_from_device(device, self.ios_username,
             self.ios_password)
-        self.assertEqual(res,'9M7G8W2BSKA')
+        self.assertEqual(res,self.ios_serial)
 
     def test_connectors_cisco_ios_get_version_bad_creds(self):
         """ Test Cisco IOS get version with bad device credentials """
