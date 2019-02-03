@@ -1,0 +1,6 @@
+[API]
+hostname =
+port =
+
+[SECURITY]
+secret_key =
