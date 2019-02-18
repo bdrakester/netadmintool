@@ -164,6 +164,14 @@ class Tests(unittest.TestCase):
         res = self.db.get_user(user.id).role_name
         self.assertEqual(res,'readonly')
 
+        # Test updating password
+        self.db.update_user(user.id,password='newpassword')
+        res = self.db.authenticate_user('TestAdmin','password')
+        self.assertEqual(res,False)
+
+        res = self.db.authenticate_user('TestAdmin','newpassword')
+        self.assertEqual(res,True)
+
     def test_delete_user(self):
         """ Test deleting a user """
         user = self.db.get_user_name('TestAdmin')

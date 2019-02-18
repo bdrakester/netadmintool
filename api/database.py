@@ -3,6 +3,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from configparser import ConfigParser
+from passlib.hash import pbkdf2_sha256
 
 
 class NetAdminToolDB:
@@ -240,9 +241,10 @@ class NetAdminToolDB:
         Add a user, return's the new user's id
         """
         role = self.get_role_name(role_name)
+        hash = pbkdf2_sha256.using(salt_size=16).hash(password)
         result = self.db.execute("INSERT INTO users (username, password, display_name, \
             role_id) VALUES (:username, :password, :display_name, :role_id) RETURNING id",
-            {'username': username, 'password': password,
+            {'username': username, 'password': hash,
             'display_name': display_name, 'role_id': role.id})
 
         self.db.commit()
@@ -293,9 +295,10 @@ class NetAdminToolDB:
                                 WHERE id = :id",
                                 {'value': value, 'id': user_id})
             if key == 'password':
+                hash = pbkdf2_sha256.using(salt_size=16).hash(value)
                 self.db.execute("UPDATE users SET password = :value \
                                 WHERE id = :id",
-                                {'value': value, 'id': user_id})
+                                {'value': hash, 'id': user_id})
             if key == 'display_name':
                 self.db.execute("UPDATE users SET display_name = :value \
                                 WHERE id = :id",
@@ -320,15 +323,14 @@ class NetAdminToolDB:
         """
         Verify username and password
         """
-        result = self.db.execute("SELECT id FROM users \
-                WHERE username = :username AND password = :password",
-                {'username': username, 'password': password}).fetchone()
+        stored_hash = self.db.execute("SELECT password FROM users \
+                WHERE username = :username",
+                {'username': username}).fetchone()[0]
         self.db.commit()
-        if None == result:
-            return False
 
-        else:
-            return True
+        result = pbkdf2_sha256.verify(password, stored_hash)
+
+        return result
 
     def add_device_type(self, make, model, code):
         """

@@ -2,3 +2,4 @@ Flask==1.0.2
 SQLAlchemy==1.2.10
 Flask-Login==0.4.1
 netmiko==2.3.0
+passlib==1.7.1
