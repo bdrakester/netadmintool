@@ -9,7 +9,6 @@ TESTING_CONFIG_FILE = 'tests.conf'
 
 app = Flask(__name__)
 app.config['DATABASE'] = NetAdminToolDB(CONFIG_FILE)
-#netAdminToolDB = NetAdminToolDB('netadminapi.conf')
 
 @app.route("/api")
 def index():
