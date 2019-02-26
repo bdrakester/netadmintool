@@ -11,7 +11,7 @@ import re
 import requests
 from requests.auth import HTTPBasicAuth
 
-urllib3.disable_warnings()
+requests.urllib3.disable_warnings()
 
 def get_version_from_device(device, username, password):
     """
