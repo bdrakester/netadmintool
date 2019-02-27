@@ -3,20 +3,26 @@
 # Needs tests.conf file for database connection information
 
 import os
+import json
 import unittest
+from unittest.mock import Mock, patch
 from configparser import ConfigParser
 
 from database import NetAdminToolDB as DB
 from application import app
-from connectors import get_version_from_device, get_serial_from_device
+from connectors import get_version_from_device, get_serial_from_device, requests
 
 # Contains test database connection information
 CONFIG_FILE = 'tests.conf'
+
+FIXTURE_PATH = os.path.join('.', 'fixtures')
 
 class Tests(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
+
+        requests.urllib3.disable_warnings()
         #print('DEBUG: test.py Running setUpClass ...')
         self.db = DB(CONFIG_FILE)
         config = ConfigParser()
@@ -24,11 +30,6 @@ class Tests(unittest.TestCase):
 
         # Import credentials and ip addresses for connectors tests
         # For future, should mock this api
-        self.asa_username = config['ASA']['username']
-        self.asa_password = config['ASA']['password']
-        self.asa_ip = config['ASA']['ip']
-        self.asa_version = config['ASA']['version']
-        self.asa_serial = config['ASA']['serial']
         self.ios_ip = config['IOS']['ip']
         self.ios_username = config['IOS']['username']
         self.ios_password = config['IOS']['password']
@@ -39,7 +40,7 @@ class Tests(unittest.TestCase):
     def setUp(self):
         #print('DEBUG: tests.py - Running setUp ...')
         self.db.create_tables()
-        self.db.add_device('TEST-firewall1', self.asa_ip, 1,
+        self.db.add_device('TEST-firewall1', '1.1.1.1', 1,
             '9.7', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
             'NGFW', 'Notes for firewall1')
         self.db.add_device('TEST-switch1', '3.3.3.3', 3,
@@ -56,6 +57,12 @@ class Tests(unittest.TestCase):
         self.client = app.test_client()
         self.client.testing = True
 
+    def load_json_fixture(self, name):
+        file = os.path.join(FIXTURE_PATH,name)
+        with open(file) as fixture_file:
+            data = json.load(fixture_file)
+
+        return data
 
     ## Database tests - tests NetAdminToolDB class.
     ## Should I seperate this into a seperate Tests class from API
@@ -316,10 +323,14 @@ class Tests(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(json_data['result'], False)
 
-    def test_api_update_version_from_cisco_asa(self):
+    @patch('application.get_version_from_device')
+    def test_api_update_version_from_cisco_asa(self, mock_get_version):
         """ Test api update software version from a Cisco ASA """
-        update = {'sw_version': None, 'device_username': self.asa_username,
-            'device_password': self.asa_password}
+
+        mock_get_version.return_value = '9.8(1)'
+
+        update = {'sw_version': None, 'device_username': 'username',
+            'device_password': 'password'}
 
         # Get the Device ID for TEST-firewall1
         res = self.client.get('/api/devices?name=TEST-firewall1')
@@ -329,7 +340,7 @@ class Tests(unittest.TestCase):
         res = self.client.put(f'/api/devices/{id}', json=update)
         self.assertEqual(res.status_code,200)
         json_data = res.get_json()
-        self.assertEqual(json_data['device']['sw_version'],self.asa_version)
+        self.assertEqual(json_data['device']['sw_version'],"9.8(1)")
 
     def test_api_update_version_from_cisco_asa_no_creds(self):
         """
@@ -347,11 +358,16 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
-    def test_api_update_version_from_cisco_asa_bad_creds(self):
+    @patch('application.get_version_from_device')
+    def test_api_update_version_from_cisco_asa_bad_creds(self, mock_get_version):
         """
         Test api update software version from a Cisco ASA with bad credentials
         """
-        update = {'sw_version': None, 'device_username': self.asa_username,
+        # If bad credentiasls, api response status code will not be  200,
+        # CiscoASA.get_version will return None
+        mock_get_version.return_value = None
+
+        update = {'sw_version': None, 'device_username': 'username',
             'device_password': 'bad password'}
 
         # Get the Device ID for TEST-firewall1
@@ -364,10 +380,14 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Unable to retrieve sw_version from device.')
 
-    def test_api_update_serial_from_cisco_asa(self):
+    @patch('application.get_serial_from_device')
+    def test_api_update_serial_from_cisco_asa(self, mock_get_serial):
         """ Test api update serial number from a Cisco ASA """
-        update = {'serial_number': None, 'device_username': self.asa_username,
-            'device_password': self.asa_password}
+
+        mock_get_serial.return_value = "9APQD52LAJP"
+
+        update = {'serial_number': None, 'device_username': 'username',
+            'device_password': 'password'}
 
         # Get the Device ID for TEST-firewall1
         res = self.client.get('/api/devices?name=TEST-firewall1')
@@ -377,7 +397,7 @@ class Tests(unittest.TestCase):
         res = self.client.put(f'/api/devices/{id}', json=update)
         self.assertEqual(res.status_code,200)
         json_data = res.get_json()
-        self.assertEqual(json_data['device']['serial_number'],self.asa_serial)
+        self.assertEqual(json_data['device']['serial_number'],"9APQD52LAJP")
 
     def test_api_update_serial_from_cisco_asa_no_creds(self):
         """
@@ -395,11 +415,17 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
-    def test_api_update_serial_from_cisco_asa_bad_creds(self):
+    @patch('application.get_serial_from_device')
+    def test_api_update_serial_from_cisco_asa_bad_creds(self, mock_get_serial):
         """
         Test api update serial number from a Cisco ASA without credentials
         """
-        update = {'serial_number': None, 'device_username': self.asa_username,
+
+        # If bad credentiasls, api response status code will not be  200,
+        # CiscoASA.get_serial will return None
+        mock_get_serial.return_value = None
+
+        update = {'serial_number': None, 'device_username': 'username',
             'device_password': 'bad password'}
 
         # Get the Device ID for TEST-firewall1
@@ -510,30 +536,50 @@ class Tests(unittest.TestCase):
 
     # Connectors tests - tests functions that collect information from
     # network devices.
-    def test_connectors_cisco_asa_get_version(self):
+    @patch('connectors.requests.get')
+    def test_connectors_cisco_asa_get_version(self, mock_get):
         """ Test CiscoASA get version """
-        device = self.db.get_device_name('TEST-firewall1')
-        res = get_version_from_device(device, self.asa_username,
-            self.asa_password)
-        self.assertEqual(res,self.asa_version)
 
-    def test_connectors_cisco_asa_get_serial(self):
+        mock_api_resp = self.load_json_fixture('asa_api_get_version.json')
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = mock_api_resp
+
+        device = self.db.get_device_name('TEST-firewall1')
+        res = get_version_from_device(device, 'username', 'password')
+        self.assertEqual(res,mock_api_resp['asaVersion'])
+
+    @patch('connectors.requests.get')
+    def test_connectors_cisco_asa_get_serial(self, mock_get):
         """ Test CiscoASA get serial  """
-        device = self.db.get_device_name('TEST-firewall1')
-        res = get_serial_from_device(device, self.asa_username,
-            self.asa_password)
-        self.assertEqual(res,self.asa_serial)
 
-    def test_connectors_cisco_asa_get_version_bad_creds(self):
-        """ Test Cisco ASA Get version with bad device credentials """
+        mock_api_resp = self.load_json_fixture('asa_get_serial.json')
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = mock_api_resp
+
         device = self.db.get_device_name('TEST-firewall1')
-        res = get_version_from_device(device, self.asa_username, 'badpass')
+        res = get_serial_from_device(device, 'username', 'password')
+        self.assertEqual(res,mock_api_resp['serialNumber'])
+
+    @patch('connectors.requests.get')
+    def test_connectors_cisco_asa_get_version_bad_creds(self, mock_get):
+        """ Test Cisco ASA Get version with bad device credentials """
+
+        # ASA API returns status code 401 when authentication fails
+        mock_get.return_value.status_code = 401
+
+        device = self.db.get_device_name('TEST-firewall1')
+        res = get_version_from_device(device, 'username', 'badpass')
         self.assertEqual(res,None)
 
-    def test_connectors_cisco_asa_get_serial_bad_creds(self):
+    @patch('connectors.requests.get')
+    def test_connectors_cisco_asa_get_serial_bad_creds(self, mock_get):
         """ Test Cisco ASA Get serial with bad device credentials """
+
+        # ASA API returns status code 401 when authentication fails
+        mock_get.return_value.status_code = 401
+
         device = self.db.get_device_name('TEST-firewall1')
-        res = get_serial_from_device(device, self.asa_username, 'badpass')
+        res = get_serial_from_device(device, 'username', 'badpass')
         self.assertEqual(res,None)
 
     def test_connectors_cisco_ios_get_version(self):

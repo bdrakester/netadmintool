@@ -4,15 +4,3 @@ port =
 dbname =
 dbusername =
 dbpassword =
-[ASA]
-ip =
-version =
-serial =
-username =
-password =
-[IOS]
-ip =
-version =
-serial =
-username =
-password =
