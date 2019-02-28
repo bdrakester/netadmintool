@@ -59,6 +59,13 @@ class Mocktest(unittest.TestCase):
 
         return data
 
+    def load_text_fixture(self, name):
+        file = os.path.join(FIXTURE_PATH,name)
+        with open(file) as fixture_file:
+            data = fixture_file.read()
+
+        return data
+
     @unittest.skip("Skip")
     @patch('connectors.requests.get')
     def test_connectors_cisco_asa_get_version(self, mock_get):
@@ -108,16 +115,17 @@ class Mocktest(unittest.TestCase):
         self.assertEqual(json_data['device']['sw_version'],"9.8(1)")
 
     @patch('connectors.netmiko.ConnectHandler')
-    def test_connectors_cisco_ios_get_version(self, mock_send_command):
+    def test_connectors_cisco_ios_get_version(self, mock_connect):
         """ Test CiscoIOS get version """
 
-        mock_send_command.return_value = "Version 12.4(24)T6"
-
+        mock_output = self.load_text_fixture('ios_show_version.txt')
+        # Double return_value to mock the instance returned by ConnectHandler
+        mock_connect.return_value.send_command.return_value = mock_output
 
         device = self.db.get_device_name('TEST-Router2')
         res = get_version_from_device(device, self.ios_username,
             self.ios_password)
-        self.assertEqual(res,self.ios_version)
+        self.assertEqual(res,'12.4(24)T6')
 
 if __name__ == "__main__":
     unittest.main()

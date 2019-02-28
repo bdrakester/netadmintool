@@ -10,7 +10,8 @@ from configparser import ConfigParser
 
 from database import NetAdminToolDB as DB
 from application import app
-from connectors import get_version_from_device, get_serial_from_device, requests
+from connectors import get_version_from_device, get_serial_from_device
+from connectors import requests, netmiko
 
 # Contains test database connection information
 CONFIG_FILE = 'tests.conf'
@@ -61,6 +62,13 @@ class Tests(unittest.TestCase):
         file = os.path.join(FIXTURE_PATH,name)
         with open(file) as fixture_file:
             data = json.load(fixture_file)
+
+        return data
+
+    def load_text_fixture(self, name):
+        file = os.path.join(FIXTURE_PATH,name)
+        with open(file) as fixture_file:
+            data = fixture_file.read()
 
         return data
 
@@ -540,25 +548,25 @@ class Tests(unittest.TestCase):
     def test_connectors_cisco_asa_get_version(self, mock_get):
         """ Test CiscoASA get version """
 
-        mock_api_resp = self.load_json_fixture('asa_api_get_version.json')
+        mock_asa_resp = self.load_json_fixture('asa_api_get_version.json')
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = mock_api_resp
+        mock_get.return_value.json.return_value = mock_asa_resp
 
         device = self.db.get_device_name('TEST-firewall1')
         res = get_version_from_device(device, 'username', 'password')
-        self.assertEqual(res,mock_api_resp['asaVersion'])
+        self.assertEqual(res,mock_asa_resp['asaVersion'])
 
     @patch('connectors.requests.get')
     def test_connectors_cisco_asa_get_serial(self, mock_get):
         """ Test CiscoASA get serial  """
 
-        mock_api_resp = self.load_json_fixture('asa_get_serial.json')
+        mock_asa_resp = self.load_json_fixture('asa_get_serial.json')
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = mock_api_resp
+        mock_get.return_value.json.return_value = mock_asa_resp
 
         device = self.db.get_device_name('TEST-firewall1')
         res = get_serial_from_device(device, 'username', 'password')
-        self.assertEqual(res,mock_api_resp['serialNumber'])
+        self.assertEqual(res,mock_asa_resp['serialNumber'])
 
     @patch('connectors.requests.get')
     def test_connectors_cisco_asa_get_version_bad_creds(self, mock_get):
@@ -582,32 +590,49 @@ class Tests(unittest.TestCase):
         res = get_serial_from_device(device, 'username', 'badpass')
         self.assertEqual(res,None)
 
-    def test_connectors_cisco_ios_get_version(self):
+    @patch('connectors.netmiko.ConnectHandler')
+    def test_connectors_cisco_ios_get_version(self, mock_connect):
         """ Test CiscoIOS get version """
+
+        mock_output = self.load_text_fixture('ios_show_version.txt')
+        # Double return_value to mock the instance returned by ConnectHandler
+        mock_connect.return_value.send_command.return_value = mock_output
+
         device = self.db.get_device_name('TEST-Router2')
         res = get_version_from_device(device, self.ios_username,
             self.ios_password)
-        self.assertEqual(res,self.ios_version)
+        self.assertEqual(res,'12.4(24)T6')
 
-    def test_connectors_cisco_ios_get_serial(self):
+    @patch('connectors.netmiko.ConnectHandler')
+    def test_connectors_cisco_ios_get_serial(self, mock_connect):
         """ Test CiscoIOS get serial  """
+
+        mock_output = self.load_text_fixture('ios_show_version.txt')
+        # Double return_value to mock the instance returned by ConnectHandler
+        mock_connect.return_value.send_command.return_value = mock_output
+
         device = self.db.get_device_name('TEST-Router2')
         res = get_serial_from_device(device, self.ios_username,
             self.ios_password)
-        self.assertEqual(res,self.ios_serial)
+        self.assertEqual(res,'4279256517')
 
-    def test_connectors_cisco_ios_get_version_bad_creds(self):
+    @patch('connectors.netmiko.ConnectHandler')
+    def test_connectors_cisco_ios_get_version_bad_creds(self, mock_connect):
         """ Test Cisco IOS get version with bad device credentials """
+
+        mock_connect.side_effect = netmiko.ssh_exception.NetMikoAuthenticationException
         device = self.db.get_device_name('TEST-Router2')
-        res = get_version_from_device(device, self.ios_username, 'badpass')
+        res = get_version_from_device(device, 'username', 'badpass')
         self.assertEqual(res,None)
 
-    def test_connectors_cisco_ios_get_serial_bad_creds(self):
+    @patch('connectors.netmiko.ConnectHandler')
+    def test_connectors_cisco_ios_get_serial_bad_creds(self, mock_connect):
         """ Test Cisco IOS get serial with bad device credentials """
-        device = self.db.get_device_name('TEST-Router2')
-        res = get_serial_from_device(device, self.ios_username, 'badpass')
-        self.assertEqual(res,None)
 
+        mock_connect.side_effect = netmiko.ssh_exception.NetMikoAuthenticationException
+        device = self.db.get_device_name('TEST-Router2')
+        res = get_serial_from_device(device, 'username', 'badpass')
+        self.assertEqual(res,None)
 
 
 if __name__ == "__main__":
