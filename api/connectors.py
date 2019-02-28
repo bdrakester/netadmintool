@@ -10,8 +10,9 @@ import netmiko
 import re
 import requests
 from requests.auth import HTTPBasicAuth
-# remove later, used to print exceptions - remove print statements too
-import sys
+
+#remove import sys later, used to print exceptions, remove print statements too
+#import sys
 
 requests.urllib3.disable_warnings()
 
@@ -93,8 +94,8 @@ class CiscoIOS:
             connection.disconnect()
             return match.group(1)
         except:
-            e = sys.exc_info()[0]
-            print(f'\nIOS get_version except - e = {e}')
+            #e = sys.exc_info()[0]
+            #print(f'\nIOS get_version except - e = {e}')
             return None
 
     @staticmethod
@@ -115,8 +116,8 @@ class CiscoIOS:
             connection.disconnect()
             return match.group(1)
         except:
-            e = sys.exc_info()[0]
-            print(f'\nIOS get_serial except - e = {e}')
+            #e = sys.exc_info()[0]
+            #print(f'\nIOS get_serial except - e = {e}')
             return None
 
 

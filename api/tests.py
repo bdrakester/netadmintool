@@ -15,7 +15,7 @@ from connectors import requests, netmiko
 
 # Contains test database connection information
 CONFIG_FILE = 'tests.conf'
-
+# Path to mock device response data
 FIXTURE_PATH = os.path.join('.', 'fixtures')
 
 class Tests(unittest.TestCase):
@@ -24,22 +24,11 @@ class Tests(unittest.TestCase):
     def setUpClass(self):
 
         requests.urllib3.disable_warnings()
-        #print('DEBUG: test.py Running setUpClass ...')
         self.db = DB(CONFIG_FILE)
         config = ConfigParser()
         config.read(CONFIG_FILE)
 
-        # Import credentials and ip addresses for connectors tests
-        # For future, should mock this api
-        self.ios_ip = config['IOS']['ip']
-        self.ios_username = config['IOS']['username']
-        self.ios_password = config['IOS']['password']
-        self.ios_version = config['IOS']['version']
-        self.ios_serial = config['IOS']['serial']
-
-
     def setUp(self):
-        #print('DEBUG: tests.py - Running setUp ...')
         self.db.create_tables()
         self.db.add_device('TEST-firewall1', '1.1.1.1', 1,
             '9.7', 'sn7890', 'Boston', 'Rack 1', 'Serial 2',
@@ -47,37 +36,42 @@ class Tests(unittest.TestCase):
         self.db.add_device('TEST-switch1', '3.3.3.3', 3,
             '3.1.4', 'sn9876', 'Boston', 'Rack 2', 'Serial 3', 'Core switch',
             'Notes for switch1')
-        self.db.add_device('TEST-Router2', self.ios_ip, 2,
+        self.db.add_device('TEST-Router2', '2.2.2.2', 2,
             '12.1', 'sn456', 'Boston', 'Rack 2', 'Serial 4', 'Core Router',
             'Notes for Router2')
 
         self.db.add_user('TestAdmin','password','TestAdmin Display','admin')
 
         app.config['DATABASE'] = DB(CONFIG_FILE)
-        #print(f"DEBUG tests.py setUP() app.config[DATABASE] = {app.config['DATABASE'].dbname}")
         self.client = app.test_client()
         self.client.testing = True
 
-    def load_json_fixture(self, name):
-        file = os.path.join(FIXTURE_PATH,name)
+    def load_json_fixture(self, filename):
+        """
+        Load json fixture containing mock device response data. Used to
+        mock Cisco ASA API responses.
+        """
+        file = os.path.join(FIXTURE_PATH, filename)
         with open(file) as fixture_file:
             data = json.load(fixture_file)
 
         return data
 
-    def load_text_fixture(self, name):
-        file = os.path.join(FIXTURE_PATH,name)
+    def load_text_fixture(self, filename):
+        """
+        Load text fixture containing mock device response data. Used to
+        mock Cisco IOS ssh command responses.
+        """
+        file = os.path.join(FIXTURE_PATH, filename)
         with open(file) as fixture_file:
             data = fixture_file.read()
 
         return data
 
-    ## Database tests - tests NetAdminToolDB class.
-    ## Should I seperate this into a seperate Tests class from API
+    ### Database tests - tests NetAdminToolDB class.
     def test_add_device(self):
         """ Test adding a device to the database """
 
-        #print('Running test_add_device ... ')
         res = self.db.add_device('TEST-router1','1.1.1.1', 2,
         '15.4','sn1234','Boston','Rack 1','Serial 1','Internet router',
         'Notes for router1')
@@ -87,7 +81,6 @@ class Tests(unittest.TestCase):
     def test_get_device_no_args(self):
         """ Test get_device with no arguments """
 
-        #print('Running test_get_device_no_args ... ')
         res = self.db.get_device()
 
         self.assertEqual(len(res),3)
@@ -95,7 +88,6 @@ class Tests(unittest.TestCase):
     def test_get_device(self):
         """ Test get_device with id argument """
 
-        #print('Running test_get_device ...')
         allDevices = self.db.get_device()
         res = self.db.get_device(allDevices[0].id)
 
@@ -104,13 +96,12 @@ class Tests(unittest.TestCase):
     def test_get_device_name(self):
         """ Test getting a device by name """
 
-        #print('Running test_get_device_name ...')
         res = self.db.get_device_name('TEST-firewall1')
         self.assertEqual(res.serial_number,'sn7890')
 
     def test_update_device(self):
         """ Test updating a device """
-        #print('Running test_update_device ...')
+
         device = self.db.get_device_name('TEST-firewall1')
         self.db.update_device(device.id, serial_number='SS112233')
         res = self.db.get_device(device.id).serial_number
@@ -120,7 +111,6 @@ class Tests(unittest.TestCase):
     def test_delete_device(self):
         """ Test deleting a device """
 
-        #print('Running test_delete_device')
         device = self.db.get_device_name('TEST-firewall1')
         self.db.delete_device(device.id)
 
@@ -161,7 +151,7 @@ class Tests(unittest.TestCase):
 
     def test_update_user(self):
         """ Test updating a user """
-        #print('Running test_update_user ...')
+
         # Test updating Display Name
         user = self.db.get_user_name('TestAdmin')
         self.db.update_user(user.id, display_name='Updated display name')
@@ -208,7 +198,6 @@ class Tests(unittest.TestCase):
     def test_api_devices(self):
         """ Test api get all devices """
 
-        #print('Running test_api_devices')
         res = self.client.get('/api/devices')
         json_data = res.get_json()
         self.assertEqual(res.status_code, 200)
@@ -371,7 +360,7 @@ class Tests(unittest.TestCase):
         """
         Test api update software version from a Cisco ASA with bad credentials
         """
-        # If bad credentiasls, api response status code will not be  200,
+        # If bad credentials, api response status code will not be 200,
         # CiscoASA.get_version will return None
         mock_get_version.return_value = None
 
@@ -429,7 +418,7 @@ class Tests(unittest.TestCase):
         Test api update serial number from a Cisco ASA without credentials
         """
 
-        # If bad credentiasls, api response status code will not be  200,
+        # If bad credentiasls, api response status code will not be 200,
         # CiscoASA.get_serial will return None
         mock_get_serial.return_value = None
 
@@ -446,11 +435,14 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Unable to retrieve serial_number from device.')
 
-    def test_api_update_version_from_cisco_ios(self):
+    @patch('application.get_version_from_device')
+    def test_api_update_version_from_cisco_ios(self, mock_get_version):
         """ Test api update software version from a Cisco IOS """
-        update = {'sw_version': None, 'device_username': self.ios_username,
-            'device_password': self.ios_password}
 
+        update = {'sw_version': None, 'device_username': 'username',
+            'device_password': 'password'}
+
+        mock_get_version.return_value = '12.4(24)T6'
         # Get the Device ID for TEST-Router2
         res = self.client.get('/api/devices?name=TEST-Router2')
         id = res.get_json()['devices'][0]['id']
@@ -459,12 +451,13 @@ class Tests(unittest.TestCase):
         res = self.client.put(f'/api/devices/{id}', json=update)
         self.assertEqual(res.status_code,200)
         json_data = res.get_json()
-        self.assertEqual(json_data['device']['sw_version'],self.ios_version)
+        self.assertEqual(json_data['device']['sw_version'],'12.4(24)T6')
 
     def test_api_update_version_from_cisco_ios_no_creds(self):
         """
         Test api update software version from a Cisco IOS without credentials
         """
+
         update = {'sw_version': None}
 
         # Get the Device ID for TEST-Router2
@@ -477,12 +470,17 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
-    def test_api_update_version_from_cisco_ios_bad_creds(self):
+    @patch('application.get_version_from_device')
+    def test_api_update_version_from_cisco_ios_bad_creds(self, mock_get_version):
         """
         Test api update software version from a Cisco IOS without credentials
         """
-        update = {'sw_version': None, 'device_username': self.ios_username,
+
+        update = {'sw_version': None, 'device_username': 'username',
             'device_password': 'bad password'}
+
+        # get_version_from_device returns None with bad credentials
+        mock_get_version.return_value = None
 
         # Get the Device ID for TEST-Router2
         res = self.client.get('/api/devices?name=TEST-Router2')
@@ -494,11 +492,14 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Unable to retrieve sw_version from device.')
 
-    def test_api_update_serial_from_cisco_ios(self):
+    @patch('application.get_serial_from_device')
+    def test_api_update_serial_from_cisco_ios(self, mock_get_serial):
         """ Test api update serial number from a Cisco IOS """
-        update = {'serial_number': None, 'device_username': self.ios_username,
-            'device_password': self.ios_password}
 
+        update = {'serial_number': None, 'device_username': 'username',
+            'device_password': 'password'}
+
+        mock_get_serial.return_value = '4279256517'
         # Get the Device ID for TEST-Router2
         res = self.client.get('/api/devices?name=TEST-Router2')
         id = res.get_json()['devices'][0]['id']
@@ -507,12 +508,13 @@ class Tests(unittest.TestCase):
         res = self.client.put(f'/api/devices/{id}', json=update)
         self.assertEqual(res.status_code,200)
         json_data = res.get_json()
-        self.assertEqual(json_data['device']['serial_number'],self.ios_serial)
+        self.assertEqual(json_data['device']['serial_number'],'4279256517')
 
     def test_api_update_serial_from_cisco_ios_no_creds(self):
         """
         Test api update serial number from a Cisco IOS without credentials
         """
+
         update = {'serial_number': None}
 
         # Get the Device ID for TEST-Router2
@@ -525,12 +527,17 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
-    def test_api_update_serial_from_cisco_ios_bad_creds(self):
+    @patch('application.get_serial_from_device')
+    def test_api_update_serial_from_cisco_ios_bad_creds(self, mock_get_serial):
         """
         Test api update serial number from a Cisco IOS without credentials
         """
-        update = {'serial_number': None, 'device_username': self.ios_username,
+
+        update = {'serial_number': None, 'device_username': 'username',
             'device_password': 'bad password'}
+
+        # get_serial_from_device returns None with bad credentials
+        mock_get_serial.return_value = None
 
         # Get the Device ID for TEST-Router2
         res = self.client.get('/api/devices?name=TEST-Router2')
@@ -599,8 +606,7 @@ class Tests(unittest.TestCase):
         mock_connect.return_value.send_command.return_value = mock_output
 
         device = self.db.get_device_name('TEST-Router2')
-        res = get_version_from_device(device, self.ios_username,
-            self.ios_password)
+        res = get_version_from_device(device, 'username', 'password')
         self.assertEqual(res,'12.4(24)T6')
 
     @patch('connectors.netmiko.ConnectHandler')
@@ -612,8 +618,7 @@ class Tests(unittest.TestCase):
         mock_connect.return_value.send_command.return_value = mock_output
 
         device = self.db.get_device_name('TEST-Router2')
-        res = get_serial_from_device(device, self.ios_username,
-            self.ios_password)
+        res = get_serial_from_device(device, 'username', 'password')
         self.assertEqual(res,'4279256517')
 
     @patch('connectors.netmiko.ConnectHandler')
