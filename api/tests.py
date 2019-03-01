@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 from configparser import ConfigParser
 
 from database import NetAdminToolDB as DB
-from application import app
+from api import app
 from connectors import get_version_from_device, get_serial_from_device
 from connectors import requests, netmiko
 
@@ -194,6 +194,9 @@ class Tests(unittest.TestCase):
         res = self.db.authenticate_user('TestAdmin', 'badpassword')
         self.assertEqual(res,False)
 
+        res = self.db.authenticate_user('doesnotexist', 'passpass')
+        self.assertEqual(res,False)
+
     ### API Tests
     def test_api_devices(self):
         """ Test api get all devices """
@@ -320,7 +323,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(json_data['result'], False)
 
-    @patch('application.get_version_from_device')
+    @patch('api.get_version_from_device')
     def test_api_update_version_from_cisco_asa(self, mock_get_version):
         """ Test api update software version from a Cisco ASA """
 
@@ -355,7 +358,7 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
-    @patch('application.get_version_from_device')
+    @patch('api.get_version_from_device')
     def test_api_update_version_from_cisco_asa_bad_creds(self, mock_get_version):
         """
         Test api update software version from a Cisco ASA with bad credentials
@@ -377,7 +380,7 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Unable to retrieve sw_version from device.')
 
-    @patch('application.get_serial_from_device')
+    @patch('api.get_serial_from_device')
     def test_api_update_serial_from_cisco_asa(self, mock_get_serial):
         """ Test api update serial number from a Cisco ASA """
 
@@ -412,7 +415,7 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
-    @patch('application.get_serial_from_device')
+    @patch('api.get_serial_from_device')
     def test_api_update_serial_from_cisco_asa_bad_creds(self, mock_get_serial):
         """
         Test api update serial number from a Cisco ASA without credentials
@@ -435,7 +438,7 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Unable to retrieve serial_number from device.')
 
-    @patch('application.get_version_from_device')
+    @patch('api.get_version_from_device')
     def test_api_update_version_from_cisco_ios(self, mock_get_version):
         """ Test api update software version from a Cisco IOS """
 
@@ -470,7 +473,7 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
-    @patch('application.get_version_from_device')
+    @patch('api.get_version_from_device')
     def test_api_update_version_from_cisco_ios_bad_creds(self, mock_get_version):
         """
         Test api update software version from a Cisco IOS without credentials
@@ -492,7 +495,7 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Unable to retrieve sw_version from device.')
 
-    @patch('application.get_serial_from_device')
+    @patch('api.get_serial_from_device')
     def test_api_update_serial_from_cisco_ios(self, mock_get_serial):
         """ Test api update serial number from a Cisco IOS """
 
@@ -527,7 +530,7 @@ class Tests(unittest.TestCase):
         json_data = res.get_json()
         self.assertEqual(json_data['error'],'Updates from device require credentials.')
 
-    @patch('application.get_serial_from_device')
+    @patch('api.get_serial_from_device')
     def test_api_update_serial_from_cisco_ios_bad_creds(self, mock_get_serial):
         """
         Test api update serial number from a Cisco IOS without credentials

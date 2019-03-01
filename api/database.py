@@ -323,12 +323,16 @@ class NetAdminToolDB:
         """
         Verify username and password
         """
-        stored_hash = self.db.execute("SELECT password FROM users \
+        query = self.db.execute("SELECT password FROM users \
                 WHERE username = :username",
-                {'username': username}).fetchone()[0]
+                {'username': username}).fetchone()
         self.db.commit()
-
-        result = pbkdf2_sha256.verify(password, stored_hash)
+        
+        if query != None:
+            stored_hash = query[0]
+            result = pbkdf2_sha256.verify(password, stored_hash)
+        else:
+            result = False
 
         return result
 
