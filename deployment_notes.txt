@@ -1,0 +1,19 @@
+https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7
+
+mkdir netadmintool
+cd netadmintool
+
+virtualenv -p python3 venv
+
+# Activate virtual env - prompt will change
+source venv/bin/activate 
+
+# Now within virtual env
+pip install gunicorn flask
+
+# ran these commands at end after getting 502 gateway error
+grep nginx /var/log/audit/audit.log | audit2allow -M nginx
+semodule -i nginx.pp
+
+# selinux also controls ports that can be used for http
+semanage port -l | grep http_port_t 
