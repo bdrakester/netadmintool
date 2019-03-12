@@ -1,3 +1,4 @@
+https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-centos-7
 https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7
 
 mkdir netadmintool
