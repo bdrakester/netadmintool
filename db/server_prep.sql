@@ -7,3 +7,5 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO natooldbuser;
 
 # Or Just make it the owner
 ALTER DATABASE netadmintool OWNER TO natooldbuser;
+
+# Then use database.create_tables
