@@ -1,0 +1,14 @@
+---
+- name: Install PostgreSQL
+  hosts: database
+  become: true
+
+  tasks:
+  - name: Install PostgreSQL
+    yum:
+      name: postgresql-server, postgresql-contrib
+      state: latest
+  - name: Initiate database
+    command: postgresql-setup initdb
+    args:
+      creates: /var/lib/pgsql/data/postgresql.conf

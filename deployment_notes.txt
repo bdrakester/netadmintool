@@ -1,13 +1,15 @@
 https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-centos-7
 https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7
 
+https://github.com/mattwillsher/ansible-product-playbooks/blob/master/postgresql/install_server.yml
+
 mkdir netadmintool
 cd netadmintool
 
 virtualenv -p python3 venv
 
 # Activate virtual env - prompt will change
-source venv/bin/activate 
+source venv/bin/activate
 
 # Now within virtual env
 pip install gunicorn flask
@@ -17,4 +19,4 @@ grep nginx /var/log/audit/audit.log | audit2allow -M nginx
 semodule -i nginx.pp
 
 # selinux also controls ports that can be used for http
-semanage port -l | grep http_port_t 
+semanage port -l | grep http_port_t
